@@ -32,6 +32,9 @@
     <Compile Include="pyGameTest.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="wheel.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env\">

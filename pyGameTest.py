@@ -55,6 +55,7 @@ def printAxis(joystick):
       if axis_status > .5 and axis_state[axis_index] == 1:
         print('%s released' % axis_names[axis_index])
         axis_state[axis_index] = 0
+  print(joystick.get_axis(4))
 
 pass
 

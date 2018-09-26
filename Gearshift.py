@@ -11,12 +11,10 @@
 
 # Translated from gearshift.ahk V1.5 tjw 2017-12-28
 
-import pygame
 import time
 
 import directInputKeySend
-
-pygame.init()
+from wheel import Wheel
 
 ForwardGears = 6            # Plus reverse
 # Joystick buttons
@@ -47,7 +45,7 @@ reshift =           True    # If True then neutral has to be selected before
 # Nothing much to twiddle with from here on
 
 global debug
-debug           =   0       # 0, 1, 2 or 3
+debug           =   3       # 0, 1, 2 or 3
 #AutoRepeat     =   0
 #NeutralBtn     =   Numpad0 # The key used to force neutral, whatever the shifter says
 
@@ -76,6 +74,9 @@ def SetTimer(callback, mS):
 
 def GetKeyState(input, tbd):
   return 99
+
+def GetClutchState():
+  return wheel_o.getClutchState()
 
 def SoundPlay(soundfile):
   pass
@@ -151,7 +152,7 @@ def gearStateMachine(event):
     if debug >= 3:
         msgBox('gearState %d event %d' % (gearState, event))
     # event check (debug)
-    if      event == clutchDisengage:
+    if   event == clutchDisengage:
       pass
     elif event == clutchEngage:
       pass
@@ -249,7 +250,7 @@ def WatchClutch():
     global KeyToHoldDown
     ClutchState = 1 # engaged
 
-    Clutch = GetKeyState(ClutchNumber, ClutchAxis)
+    Clutch = GetClutchState()
     # Clutch 100 is up, 0 is down to the floor
     # Unless ReverseClutchAxis is True when it's the opposite.
     if ReverseClutchAxis == False:
@@ -275,11 +276,10 @@ def WatchClutch():
     Gear5 = GetKeyState(ShifterNumber,Shifter5)
     Gear6 = GetKeyState(ShifterNumber,Shifter6)
     GearR = GetKeyState(ShifterNumber,ShifterR)
-    Gear1 = GetKeyState(ShifterNumber,Shifter1)
 
     KeyToHoldDownPrev = KeyToHoldDown  # Prev now holds the key that was down before (if any).
 
-    if       Gear1 == 'D':
+    if   Gear1 == 'D':
         KeyToHoldDown = 'DIK_NUMPAD1'
     elif Gear2 == 'D':
         KeyToHoldDown = 'DIK_NUMPAD2'
@@ -379,10 +379,12 @@ def ShowButtons():
 """
 
 if __name__ == "__main__":
+  wheel_o = Wheel('Logitech G25 Racing Wheel USB')
+  if wheel_o.error:
+    print(wheel_o.error_string)
+    exit()
   if TestMode == False:
       SetTimer(WatchClutch, 10)
   else:
       SetTimer(ShowButtons, 100)
 
-  while 1:
-    pass

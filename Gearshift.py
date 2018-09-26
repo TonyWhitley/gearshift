@@ -80,6 +80,9 @@ def GetKeyState(input, tbd):
 def SoundPlay(soundfile):
   pass
 
+def msgBox(str):
+  print(str)
+
 #################################################################################
 
 """ Moved
@@ -98,12 +101,10 @@ def graunch():
         graunchCount = 0
         graunch2()
         if debug >= 2:
-
             msgBox('GRAUNCH!')
 
 
 def graunchStop():
-
         SetTimer(graunch1, Delete)  # stop the timers
         SetTimer(graunch2, Delete)
         SoundPlay('Nonexistent.wav')  # stop the noise
@@ -122,7 +123,6 @@ def graunch2():
                # Start the noise again
                 SoundPlay('Grind_default.wav')
                 graunchCount = 5
-
         else:
             graunchCount -= 1
         SetTimer(graunch1, -100)
@@ -160,128 +160,82 @@ def gearStateMachine(event):
     elif event == gearDeselect:
       pass
     else:
-
             msgBox('gearStateMachine() invalid event %d' % event)
 
-
-    if      gearState == neutral:
-
+    if    gearState == neutral:
         if event == clutchDisengage:
-
                 gearState = clutchDown
                 if debug >= 1:
                     directInputKeySend.PressKey('DIK_D')
-
         elif event == gearSelect:
-
                 graunch()
                 gearState = graunching
 
-
     elif gearState == clutchDown:
-
         if event == gearSelect:
-
                 gearState = clutchDownGearSelected
-
         elif event == clutchEngage:
-
                 gearState = neutral
                 if debug >= 1:
                     directInputKeySend.PressKey('DIK_U')
 
-
     elif gearState == waitForDoubleDeclutchUp:
-
         if event == clutchEngage:
-
                 gearState = neutral
                 if debug >= 2:
                     msgBox('Double declutch spin up the box')
-
         elif event == gearSelect:
-
                 graunch()
                 gearState = graunching
 
-
     elif gearState == clutchDownGearSelected:
-
         if event == clutchEngage:
-
                 gearState = inGear
                 if debug >= 2:
                     msgBox('In gear')
-
         elif event == gearDeselect:
-
                 if doubleDeclutch:
                     gearState = waitForDoubleDeclutchUp
                 else:
                     gearState = clutchDown
 
-
     elif gearState == inGear:
-
         if event == gearDeselect:
-
                 gearState = neutral
                 if debug >= 2:
                     msgBox('Knocked out of gear')
-
         elif event == clutchDisengage:
-
                 gearState = clutchDownGearSelected
 
-
     elif gearState == graunching:
-
         if event == clutchDisengage:
-
                 if reshift == False:
-
                         if debug >= 1:
                             directInputKeySend.PressKey('DIK_R')
                         gearState = clutchDownGearSelected
-
                 else:
-
                         gearState = graunchingClutchDown
-
                 graunchStop()
                 if debug >= 1:
                     directInputKeySend.PressKey('DIK_G')
-
         elif event == clutchEngage:
-
                 graunch()   # graunch again
-
         elif event == gearDeselect:
-
                 gearState = neutral
                 graunchStop()
-
         elif event == gearSelect:
-
                 graunchStop()
                 graunch()   # graunch again
 
-
     elif gearState == graunchingClutchDown:
-
         if event == clutchEngage:
-
                 graunch()   # graunch again
                 gearState = graunching
-
         elif event == gearDeselect:
-
                 gearState = clutchDown
                 graunchStop()
 
-
     else:
-
            msgBox('Bad gearStateMachine() state gearState')
 
     if gearState != graunching:
@@ -299,17 +253,13 @@ def WatchClutch():
     # Clutch 100 is up, 0 is down to the floor
     # Unless ReverseClutchAxis is True when it's the opposite.
     if ReverseClutchAxis == False:
-
         if Clutch < ClutchEngaged:
             ClutchState = 0  # clutch is disengaged
-
     else:
-
       if Clutch > ClutchEngaged:
             ClutchState = 0  # clutch is disengaged
 
     if ClutchState != ClutchPrev:
-
         if ClutchState == 0:
             gearStateMachine(clutchDisengage)
         else:
@@ -347,20 +297,14 @@ def WatchClutch():
         KeyToHoldDown = 'DIK_NUMPAD0'
 
     if KeyToHoldDown == KeyToHoldDownPrev:  # The button is already down (or no button is pressed).
-
         #if AutoRepeat && KeyToHoldDown
         #   Send, KeyToHoldDown down  # Auto-repeat the keystroke.
         return
 
-
     if KeyToHoldDown == 'DIK_NUMPAD0':
-
             gearStateMachine(gearDeselect)
-
     else:
-
             gearStateMachine(gearSelect)
-
 
     # Otherwise, release the previous key and press down the new key:
     SetKeyDelay = -1  # Avoid delays between keystrokes.

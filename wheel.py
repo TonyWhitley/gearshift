@@ -71,7 +71,7 @@ class Wheel:
     """ return 100 clutch released, 0 clutch pressed """
     clutchValue = self.joystick.get_axis(clutch_index)
     # 1 is released, -1 is pressed
-    return (clutchValue * 50) + 50
+    return int((clutchValue * 50)) + 50
 
   def getButtonState(self, buttonNumber):
     state = self.joystick.get_button(buttonNumber)
@@ -88,13 +88,13 @@ class Wheel:
               return
           # Possible joystick actions: JOYAXISMOTION JOYBALLMOTION JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
           if event.type == pygame.JOYAXISMOTION:
-              printAxis(joystick)
+              #printAxis(self.joystick)
               callback()
           if event.type == pygame.JOYBUTTONDOWN:
-              self.buttonPushed()
+              #self.buttonPushed()
               callback()
           if event.type == pygame.JOYBUTTONUP:
-              self.buttonReleased()
+              #self.buttonReleased()
               callback()
 
 

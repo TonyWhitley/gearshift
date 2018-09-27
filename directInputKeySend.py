@@ -168,6 +168,11 @@ class Input(ctypes.Structure):
 # Actual Functions
 
 def PressKey(keyStr):
+  ###########################################
+  # debug
+  #print(keyStr)
+  #return True
+  ###########################################
   try:
     hexKeyCode = DirectInputKeyCodeTable[keyStr]
     extra = ctypes.c_ulong(0)

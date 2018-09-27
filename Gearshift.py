@@ -12,19 +12,20 @@
 # Translated from gearshift.ahk V1.5 tjw 2017-12-28
 
 import time
+from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
 
 import directInputKeySend
 from wheel import Wheel
 
 ForwardGears = 6            # Plus reverse
 # Joystick buttons
-Shifter1 = 9
-Shifter2 = 10
-Shifter3 = 11
-Shifter4 = 12
-Shifter5 = 13
-Shifter6 = 14
-ShifterR = 15
+Shifter1 = 8
+Shifter2 = 9
+Shifter3 = 10
+Shifter4 = 11
+Shifter5 = 12
+Shifter6 = 13
+ShifterR = 14
 ClutchAxis = 'JoyU'         # R U V or Z
 ReverseClutchAxis = False   # If True then the clutch input goes from 100 (down) to 0 (up)
 
@@ -45,18 +46,19 @@ reshift =           True    # If True then neutral has to be selected before
 # Nothing much to twiddle with from here on
 
 global debug
-debug           =   3       # 0, 1, 2 or 3
+debug           =   0       # 0, 1, 2 or 3
 #AutoRepeat     =   0
 #NeutralBtn     =   Numpad0 # The key used to force neutral, whatever the shifter says
 
 firstGearJoyButton = Shifter1
 
 # Gear change events
-clutchDisengage         = 100
-clutchEngage            = 101
-gearSelect              = 102
-gearDeselect            = 103
+clutchDisengage         = 'clutchDisengage'
+clutchEngage            = 'clutchEngage'
+gearSelect              = 'gearSelect'
+gearDeselect            = 'gearDeselect'
 
+gearState = 'neutral' # TBD
 global graunchCount
 
 ClutchPrev = 0
@@ -72,33 +74,26 @@ def SetTimer(callback, mS):
   else: 
     pass # TBD delete timer?
 
-def GetKeyState(input, tbd):
-  return 99
+def GetKeyState(tbd, input):
+  return wheel_o.getButtonState(input)
 
 def GetClutchState():
   return wheel_o.getClutchState()
 
 def SoundPlay(soundfile):
-  pass
+  if soundfile != 'Nonexistent.wav':
+    PlaySound(soundfile, SND_FILENAME|SND_LOOP|SND_ASYNC)
+  else:
+    PlaySound(None, SND_FILENAME)
 
 def msgBox(str):
   print(str)
 
 #################################################################################
 
-""" Moved
-  if TestMode == False:
-      SetTimer(WatchClutch, 10)
-  else:
-      SetTimer(ShowButtons, 100)
-
-  while 1:
-    pass
-"""
-#################################################################################
-
 def graunch():
         # Start the graunch noise and sending "Neutral"
+        global graunchCount
         graunchCount = 0
         graunch2()
         if debug >= 2:
@@ -119,6 +114,7 @@ def graunch1():
 
 def graunch2():
         # Send the "Neutral" key press
+        global graunchCount
         directInputKeySend.PressKey('DIK_NUMPAD0')
         if graunchCount <= 0:
                # Start the noise again
@@ -130,27 +126,26 @@ def graunch2():
         if debug >= 1:
             directInputKeySend.PressKey('DIK_G')
             time.sleep(.05)
-            directInputKeySend.ReleaseKeyKey('DIK_G')
+            directInputKeySend.ReleaseKey('DIK_G')
 
 
 
 ######################################################################
 
 def gearStateMachine(event):
+    global gearState 
 
     # Gear change states
-    neutral                = 90
-    clutchDown             = 91
-    waitForDoubleDeclutchUp= 92
-    clutchDownGearSelected = 93
-    inGear                 = 94
-    graunching             = 95
-    graunchingClutchDown   = 96
-
-    gearState = neutral
+    neutral                = 'neutral'
+    clutchDown             = 'clutchDown'
+    waitForDoubleDeclutchUp= 'waitForDoubleDeclutchUp'
+    clutchDownGearSelected = 'clutchDownGearSelected'
+    inGear                 = 'inGear'
+    graunching             = 'graunching'
+    graunchingClutchDown   = 'graunchingClutchDown'
 
     if debug >= 3:
-        msgBox('gearState %d event %d' % (gearState, event))
+        msgBox('gearState %s event %s' % (gearState, event))
     # event check (debug)
     if   event == clutchDisengage:
       pass
@@ -161,7 +156,7 @@ def gearStateMachine(event):
     elif event == gearDeselect:
       pass
     else:
-            msgBox('gearStateMachine() invalid event %d' % event)
+            msgBox('gearStateMachine() invalid event %s' % event)
 
     if    gearState == neutral:
         if event == clutchDisengage:
@@ -384,7 +379,8 @@ if __name__ == "__main__":
     print(wheel_o.error_string)
     exit()
   if TestMode == False:
-      SetTimer(WatchClutch, 10)
+      #SetTimer(WatchClutch, 10)
+      wheel_o.run(WatchClutch)
   else:
       SetTimer(ShowButtons, 100)
 

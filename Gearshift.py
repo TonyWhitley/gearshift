@@ -8,10 +8,12 @@
 # gears.
 #
 # The game has to have Numpad 0 mapped as "Neutral".
+#
+# V1.5.3 tjw 2018-09-27
 
 # Translated from gearshift.ahk V1.5 tjw 2017-12-28
 
-import time
+from threading import Timer
 from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
 
 import directInputKeySend
@@ -59,7 +61,6 @@ gearSelect              = 'gearSelect'
 gearDeselect            = 'gearDeselect'
 
 gearState = 'neutral' # TBD
-global graunchCount
 
 ClutchPrev = 0
 KeyToHoldDown = 0
@@ -69,8 +70,8 @@ Delete = -1  # delete timer
 # AHK replacement fns
 def SetTimer(callback, mS):
   if mS > 0:
-    time.sleep(mS / 1000)
-    callback()
+    timer = Timer(mS / 1000, callback)
+    timer.start()
   else: 
     pass # TBD delete timer?
 
@@ -81,48 +82,47 @@ def GetClutchState():
   return wheel_o.getClutchState()
 
 def SoundPlay(soundfile):
-  if soundfile != 'Nonexistent.wav':
-    PlaySound(soundfile, SND_FILENAME|SND_LOOP|SND_ASYNC)
-  else:
-    PlaySound(None, SND_FILENAME)
+  PlaySound(soundfile, SND_FILENAME|SND_LOOP|SND_ASYNC)
+
+def SoundStop():
+  PlaySound(None, SND_FILENAME)
 
 def msgBox(str):
   print(str)
 
 #################################################################################
 
-def graunch():
+class graunch:
+  def __init__(self):
+        self.graunching = False
+  def graunchStart(self):
         # Start the graunch noise and sending "Neutral"
-        global graunchCount
-        graunchCount = 0
-        graunch2()
+        # Start the noise
+        SoundPlay('Grind_default.wav')
+        self.graunching = True
+        self.graunch2()
         if debug >= 2:
             msgBox('GRAUNCH!')
 
 
-def graunchStop():
-        SetTimer(graunch1, Delete)  # stop the timers
-        SetTimer(graunch2, Delete)
-        SoundPlay('Nonexistent.wav')  # stop the noise
+  def graunchStop(self):
+        self.graunching = False
+        SoundStop()  # stop the noise
+        self.graunch1()
 
 
-def graunch1():
+  def graunch1(self):
         # Send the "Neutral" key release
         directInputKeySend.ReleaseKey('DIK_NUMPAD0')
-        SetTimer(graunch2, -20)
+        if self.graunching:
+          SetTimer(self.graunch2, 20)
 
 
-def graunch2():
+  def graunch2(self):
+      if self.graunching:      
         # Send the "Neutral" key press
-        global graunchCount
         directInputKeySend.PressKey('DIK_NUMPAD0')
-        if graunchCount <= 0:
-               # Start the noise again
-                SoundPlay('Grind_default.wav')
-                graunchCount = 5
-        else:
-            graunchCount -= 1
-        SetTimer(graunch1, -100)
+        SetTimer(self.graunch1, 100)
         if debug >= 1:
             directInputKeySend.PressKey('DIK_G')
             time.sleep(.05)
@@ -164,7 +164,7 @@ def gearStateMachine(event):
                 if debug >= 1:
                     directInputKeySend.PressKey('DIK_D')
         elif event == gearSelect:
-                graunch()
+                graunch_o.graunchStart()
                 gearState = graunching
 
     elif gearState == clutchDown:
@@ -181,7 +181,7 @@ def gearStateMachine(event):
                 if debug >= 2:
                     msgBox('Double declutch spin up the box')
         elif event == gearSelect:
-                graunch()
+                graunch_o.graunchStart()
                 gearState = graunching
 
     elif gearState == clutchDownGearSelected:
@@ -211,31 +211,31 @@ def gearStateMachine(event):
                         gearState = clutchDownGearSelected
                 else:
                         gearState = graunchingClutchDown
-                graunchStop()
+                graunch_o.graunchStop()
                 if debug >= 1:
                     directInputKeySend.PressKey('DIK_G')
         elif event == clutchEngage:
-                graunch()   # graunch again
+                graunch_o.graunchStart()   # graunch again
         elif event == gearDeselect:
                 gearState = neutral
-                graunchStop()
+                graunch_o.graunchStop()
         elif event == gearSelect:
-                graunchStop()
-                graunch()   # graunch again
+                graunch_o.graunchStop()
+                graunch_o.graunchStart()   # graunch again
 
     elif gearState == graunchingClutchDown:
         if event == clutchEngage:
-                graunch()   # graunch again
+                graunch_o.graunchStart()   # graunch again
                 gearState = graunching
         elif event == gearDeselect:
                 gearState = clutchDown
-                graunchStop()
+                graunch_o.graunchStop()
 
     else:
            msgBox('Bad gearStateMachine() state gearState')
 
     if gearState != graunching:
-        graunchStop()   # belt and braces - sometimes it gets stuck.
+        graunch_o.graunchStop()   # belt and braces - sometimes it gets stuck.
 
 
 
@@ -375,6 +375,7 @@ def ShowButtons():
 
 if __name__ == "__main__":
   wheel_o = Wheel('Logitech G25 Racing Wheel USB')
+  graunch_o = graunch()
   if wheel_o.error:
     print(wheel_o.error_string)
     exit()

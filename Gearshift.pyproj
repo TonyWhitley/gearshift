@@ -29,9 +29,6 @@
     <Compile Include="directInputKeySend.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="pyGameTest.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="wheel.py">
       <SubType>Code</SubType>
     </Compile>

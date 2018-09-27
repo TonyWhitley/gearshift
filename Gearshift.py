@@ -9,7 +9,20 @@
 #
 # The game has to have Numpad 0 mapped as "Neutral".
 #
-# V1.5.3 tjw 2018-09-27
+# Notes:
+# Virtual env pygame runs OK but the exe pyinstaller produces has import errors.
+# Instead install pygame into the main install with
+# py -3.6 -m pip install pygame
+# Comment out the last two lines of C:\Python36\Lib\site-packages\pygame\__init__.py
+#print('pygame %s' % ver)
+#print('Hello from the pygame community. https://www.pygame.org/contribute.html')
+
+BUILD_REVISION = 7 # The git commit count
+versionStr = 'gearshift V1.5.%d' % BUILD_REVISION
+versionDate = '2018-09-27'
+
+print(versionStr, versionDate)
+
 
 # Translated from gearshift.ahk V1.5 tjw 2017-12-28
 

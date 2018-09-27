@@ -329,3 +329,7 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 /env
+/build/gearshift
+/envPygame
+/gearshift.spec
+/gearshift.exe

@@ -333,3 +333,6 @@ ASALocalRun/
 /envPygame
 /gearshift.spec
 /gearshift.exe
+/build/Configurer
+/Configurer.spec
+/Configurer.exe

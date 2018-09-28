@@ -1,3 +1,9 @@
+# Set values in gearshift.ini to configure shifter and clutch
+
+BUILD_REVISION = 9 # The git commit count
+versionStr = 'Gearshift Configurer V0.1.%d' % BUILD_REVISION
+versionDate = '2018-09-28'
+
 # Python 3
 import tkinter as tk
 from tkinter import ttk
@@ -37,8 +43,8 @@ def setClutch(controller_o):
   messagebox.showinfo('', 'Press the clutch then press OK')
   for g in range(controller_o.num_axes):
     print(g, controller_o.getAxis(g))
-    if controller_o.getAxis(g) < 90:
-      pass
+    if controller_o.getAxis(g) < 30:
+      return g
   messagebox.showinfo('', 'Clutch not pressed')
 
 def dummy():
@@ -53,15 +59,21 @@ class Tab:
     self.controller_o = Controller()
     self.config_o = Config()
 
+    tkLabelTitle = tk.Label(parentFrame, 
+                            text='%s %s' % (versionStr, versionDate))
+    tkLabelTitle.grid(column=0, row=0, sticky='w')
+
+    ##########################################################
     xPadding = 10
     tkFrame_Shifter = tk.LabelFrame(parentFrame, text='Shifter')
-    tkFrame_Shifter.grid(column=1, row=2, sticky='ew', padx=xPadding)
+    tkFrame_Shifter.grid(column=0, row=2, sticky='ew', padx=xPadding)
 
     # Create a Tkinter variable
     self.shifterController = tk.StringVar(root)
 
     self.controllerChoice(tkFrame_Shifter, self.shifterController)
 
+    ##########################################################
     for _gear, (name, gear) in enumerate(gears.items()):
       gears[name][0] = tk.Button(tkFrame_Shifter, text=name, width=12, 
                                  command=lambda n=name, w=self.controller_o: setGear(n,w))
@@ -70,33 +82,59 @@ class Tab:
       gears[name][1] = tk.Label(tkFrame_Shifter, text=gear[3])
       gears[name][1].grid(row = _gear+2, column=2, sticky='w')
       gears[name][2] = tk.StringVar()
+    for name, gear in gears.items():
+      gear[2].set(self.config_o.get('shifter', name))
 
     self.shifterController.set(self.config_o.get('shifter', 'controller'))
 
+    ##########################################################
 
     tkFrame_Clutch = tk.LabelFrame(parentFrame, text='Clutch', padx=xPadding)
     tkFrame_Clutch.grid(column=3, row=2, sticky='ew')
 
     # Create a Tkinter variable
     self.clutchController = tk.StringVar(root)
-
     self.controllerChoice(tkFrame_Clutch, self.clutchController)
     self.clutchController.set(self.config_o.get('clutch', 'controller'))
+    #############################
 
     tkButton_selectClutch = tk.Button(tkFrame_Clutch, text='Select clutch', width=12, 
                                 command=lambda w=self.controller_o: setClutch(w))
     tkButton_selectClutch.grid(row = 2, sticky='w')
 
+    #############################
     tkLabel_clutchBitePoint = tk.Label(tkFrame_Clutch, text='Clutch bite point')
     tkLabel_clutchBitePoint.grid(column=0, row=3, sticky='e')
 
-    tkScale_clutchBitePoint = tk.Scale(tkFrame_Clutch, from_=0, to=100, orient=tk.HORIZONTAL)
-    tkScale_clutchBitePoint.grid(column=1, row=2, sticky='ewns')
+    self.tkScale_clutchBitePoint = tk.Scale(tkFrame_Clutch, from_=0, to=100, orient=tk.HORIZONTAL)
+    self.tkScale_clutchBitePoint.grid(column=1, row=3, sticky='ewns')
+    self.tkScale_clutchBitePoint.set(self.config_o.get('clutch', 'bite point'))
+    #############################
 
-    tkCheckbutton_GearClutch = tk.Checkbutton(tkFrame_Clutch, text='Shifter damage (Grinding Tranny)')
+    self.damage = tk.IntVar()
+    self.tkCheckbutton_GearClutchDamage = tk.Checkbutton(tkFrame_Clutch, 
+                                                         var=self.damage,
+                                                         text='Gearbox damage (Grinding Tranny)')
 
-    tkCheckbutton_GearClutch.grid(sticky='w')
+    self.tkCheckbutton_GearClutchDamage.grid(sticky='w')
+    x = self.config_o.get('miscellaneous', 'damage')
+    if not x:
+      x = 0
+    self.damage.set(x)
 
+    #############################
+    self.reverse = tk.IntVar()
+    self.tkCheckbutton_Reverse = tk.Checkbutton(tkFrame_Clutch, 
+                                                var=self.reverse,
+                                                text='Clutch readings are reversed')
+
+    self.tkCheckbutton_Reverse.grid(sticky='w')
+    x = self.config_o.get('clutch', 'reversed')
+    if not x:
+      x = 0
+    self.reverse.set(x)
+
+    #############################
     buttonFont = font.Font(weight='bold', size=10)
 
     self.tkButtonSave = tk.Button(
@@ -108,7 +146,7 @@ class Tab:
         font=buttonFont,
         command=self.save)
     self.tkButtonSave.grid(column=2, row=3, pady=25)
-
+    #############################
 
     self.controller_o.run(dummy, parentFrame)
 
@@ -122,6 +160,7 @@ class Tab:
     tk.Label(parent, text="Choose a controller").grid(row = 0, column = 0)
     popupMenu.grid(row=0, column=2)
  
+    #############################
     # on change dropdown value
     def change_dropdown(*args):
         name = tkvar.get()
@@ -134,8 +173,13 @@ class Tab:
   def save(self):
     self.config_o.set('shifter','controller', self.shifterController.get())
     self.config_o.set('clutch','controller', self.clutchController.get())
+    #############################
     for name, gear in gears.items():
       self.config_o.set('shifter', name, gear[2].get())
+    #############################
+    self.config_o.set('clutch', 'bite point', str(self.tkScale_clutchBitePoint.get()))
+    self.config_o.set('miscellaneous', 'damage', str(self.damage.get()))
+    self.config_o.set('clutch', 'reverse', str(self.reverse.get()))
     self.config_o.write()
 
   def getSettings(self):

@@ -22,6 +22,10 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="configIni.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Configurer.py" />
     <Compile Include="dummyGame.py">
       <SubType>Code</SubType>
     </Compile>

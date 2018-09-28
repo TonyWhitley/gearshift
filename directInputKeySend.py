@@ -196,6 +196,11 @@ def ReleaseKey(keyStr):
   except:
     return False
 
+def PressReleaseKey(keyStr):
+    PressKey(keyStr) 
+    time.sleep(.05)
+    ReleaseKey(keyStr)
+
 if __name__ == "__main__":
     time.sleep(3)
     PressKey('DIK_Q')   # press Q

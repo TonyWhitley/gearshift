@@ -17,9 +17,9 @@
 #print('pygame %s' % ver)
 #print('Hello from the pygame community. https://www.pygame.org/contribute.html')
 
-BUILD_REVISION = 7 # The git commit count
+BUILD_REVISION = 8 # The git commit count
 versionStr = 'gearshift V1.5.%d' % BUILD_REVISION
-versionDate = '2018-09-27'
+versionDate = '2018-09-28'
 
 print(versionStr, versionDate)
 
@@ -29,24 +29,12 @@ print(versionStr, versionDate)
 from threading import Timer
 from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
 
+from configIni import Config
 import directInputKeySend
-from wheel import Wheel
+from wheel import Controller
 
 ForwardGears = 6            # Plus reverse
-# Joystick buttons
-Shifter1 = 8
-Shifter2 = 9
-Shifter3 = 10
-Shifter4 = 11
-Shifter5 = 12
-Shifter6 = 13
-ShifterR = 14
-ClutchAxis = 'JoyU'         # R U V or Z
 ReverseClutchAxis = False   # If True then the clutch input goes from 100 (down) to 0 (up)
-
-ShifterNumber  =    1       # Shifter port
-ClutchNumber   =    1       # Clutch port
-
 TestMode       =    False   # If True then show shifter and clutch operation
 
 ClutchEngaged  =    90      # (0 - 100) the point in the travel where the clutch engages
@@ -63,9 +51,7 @@ reshift =           True    # If True then neutral has to be selected before
 global debug
 debug           =   0       # 0, 1, 2 or 3
 #AutoRepeat     =   0
-#NeutralBtn     =   Numpad0 # The key used to force neutral, whatever the shifter says
-
-firstGearJoyButton = Shifter1
+#NeutralBtn     The key used to force neutral, whatever the shifter says
 
 # Gear change events
 clutchDisengage         = 'clutchDisengage'
@@ -73,6 +59,7 @@ clutchEngage            = 'clutchEngage'
 gearSelect              = 'gearSelect'
 gearDeselect            = 'gearDeselect'
 
+#globals 
 gearState = 'neutral' # TBD
 
 ClutchPrev = 0
@@ -88,11 +75,13 @@ def SetTimer(callback, mS):
   else: 
     pass # TBD delete timer?
 
-def GetKeyState(tbd, input):
-  return wheel_o.getButtonState(input)
+def GetKeyState(input):
+  if input:
+    return shifterController_o.getButtonState(input)
 
 def GetClutchState():
-  return wheel_o.getClutchState()
+  return clutchController_o.getAxis(clutchAxis)
+
 
 def SoundPlay(soundfile):
   PlaySound(soundfile, SND_FILENAME|SND_LOOP|SND_ASYNC)
@@ -111,7 +100,7 @@ class graunch:
   def graunchStart(self):
         # Start the graunch noise and sending "Neutral"
         # Start the noise
-        SoundPlay('Grind_default.wav')
+        SoundPlay(graunchWav)
         self.graunching = True
         self.graunch2()
         if debug >= 2:
@@ -126,7 +115,7 @@ class graunch:
 
   def graunch1(self):
         # Send the "Neutral" key release
-        directInputKeySend.ReleaseKey('DIK_NUMPAD0')
+        directInputKeySend.ReleaseKey(neutralButton)
         if self.graunching:
           SetTimer(self.graunch2, 20)
 
@@ -134,12 +123,10 @@ class graunch:
   def graunch2(self):
       if self.graunching:      
         # Send the "Neutral" key press
-        directInputKeySend.PressKey('DIK_NUMPAD0')
+        directInputKeySend.PressKey(neutralButton)
         SetTimer(self.graunch1, 100)
         if debug >= 1:
-            directInputKeySend.PressKey('DIK_G')
-            time.sleep(.05)
-            directInputKeySend.ReleaseKey('DIK_G')
+            directInputKeySend.PressReleaseKey('DIK_G')
 
 
 
@@ -277,13 +264,15 @@ def WatchClutch():
     ClutchPrev = ClutchState
 
 
-    Gear1 = GetKeyState(ShifterNumber,Shifter1)
-    Gear2 = GetKeyState(ShifterNumber,Shifter2)
-    Gear3 = GetKeyState(ShifterNumber,Shifter3)
-    Gear4 = GetKeyState(ShifterNumber,Shifter4)
-    Gear5 = GetKeyState(ShifterNumber,Shifter5)
-    Gear6 = GetKeyState(ShifterNumber,Shifter6)
-    GearR = GetKeyState(ShifterNumber,ShifterR)
+    Gear1 = GetKeyState(Shifter1)
+    Gear2 = GetKeyState(Shifter2)
+    Gear3 = GetKeyState(Shifter3)
+    Gear4 = GetKeyState(Shifter4)
+    Gear5 = GetKeyState(Shifter5)
+    Gear6 = GetKeyState(Shifter6)
+    Gear7 = GetKeyState(Shifter7)
+    Gear8 = GetKeyState(Shifter8)
+    GearR = GetKeyState(ShifterR)
 
     KeyToHoldDownPrev = KeyToHoldDown  # Prev now holds the key that was down before (if any).
 
@@ -298,18 +287,22 @@ def WatchClutch():
     elif Gear5 == 'D':
         KeyToHoldDown = 'DIK_NUMPAD5'
     elif Gear6 == 'D':
+        KeyToHoldDown = 'DIK_NUMPAD7'
+    elif Gear7 == 'D':
         KeyToHoldDown = 'DIK_NUMPAD6'
+    elif Gear8 == 'D':
+        KeyToHoldDown = 'DIK_NUMPAD8'
     elif GearR == 'D':
         KeyToHoldDown = 'DIK_NUMPAD9'
     else:
-        KeyToHoldDown = 'DIK_NUMPAD0'
+        KeyToHoldDown = neutralButton
 
     if KeyToHoldDown == KeyToHoldDownPrev:  # The button is already down (or no button is pressed).
         #if AutoRepeat && KeyToHoldDown
         #   Send, KeyToHoldDown down  # Auto-repeat the keystroke.
         return
 
-    if KeyToHoldDown == 'DIK_NUMPAD0':
+    if KeyToHoldDown == neutralButton:
             gearStateMachine(gearDeselect)
     else:
             gearStateMachine(gearSelect)
@@ -387,14 +380,41 @@ def ShowButtons():
 """
 
 if __name__ == "__main__":
-  wheel_o = Wheel('Logitech G25 Racing Wheel USB')
-  graunch_o = graunch()
-  if wheel_o.error:
-    print(wheel_o.error_string)
+  config_o = Config()
+  debug = config_o.get('miscellaneous', 'debug')
+  if not debug: debug = 0
+  graunchWav = config_o.get('miscellaneous', 'wav file')
+  Shifter1 = config_o.get('shifter', '1st gear')
+  Shifter2 = config_o.get('shifter', '2nd gear')
+  Shifter3 = config_o.get('shifter', '3rd gear')
+  Shifter4 = config_o.get('shifter', '4th gear')
+  Shifter5 = config_o.get('shifter', '5th gear')
+  Shifter6 = config_o.get('shifter', '6th gear')
+  Shifter7 = config_o.get('shifter', '7th gear')
+  Shifter8 = config_o.get('shifter', '8th gear')
+  ShifterR = config_o.get('shifter', 'reverse')
+  neutralButton = config_o.get('miscellaneous', 'neutral button')
+
+  shifterController_o = Controller()
+  shifterController_o.selectController(config_o.get('shifter', 'controller'))
+  clutchController_o = Controller()
+  clutchController_o.selectController(config_o.get('clutch', 'controller'))
+  clutchAxis = config_o.get('clutch', 'axis')
+  ClutchEngaged = config_o.get('clutch', 'bite point')
+  ReverseClutchAxis = config_o.get('clutch', 'reversed')
+
+  if shifterController_o.error:
+    print(shifterController_o.error_string)
     exit()
+  if clutchController_o.error:
+    print(clutchController_o.error_string)
+    exit()
+
+  graunch_o = graunch()
+
   if TestMode == False:
       #SetTimer(WatchClutch, 10)
-      wheel_o.run(WatchClutch)
+      shifterController_o.run(WatchClutch)
   else:
       SetTimer(ShowButtons, 100)
 

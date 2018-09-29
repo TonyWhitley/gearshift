@@ -3,7 +3,7 @@
 import pygame
 
 """
-Axes:
+G25 Axes:
   0 -ve      Left
   0 +ve      Right
   1          ???
@@ -11,36 +11,6 @@ Axes:
   3 1 -> -1  Brake
   4 1 -> -1  Clutch
 """
-
-axis_names = [
-  'wheel',
-  '?????',
-  'accelerator',
-  'brake',
-  'clutch'
-  ]
-
-clutch_index = 4
-
-def buttonPushed():
-  for i in range( buttons ):
-    button = controller.get_button( i )
-    print("Button {:>2} value: {}".format(i+1,button) )
-    if i == 19-1 and button:
-      print('Button 19 pressed')
-      directInputKeySend.PressKey('DIK_NUMPAD0')
-
-def printAxis(controller):
-  for axis_index in range(controller.get_numaxes()):
-      axis_status = controller.get_axis(axis_index)
-      if axis_status < -.5 and axis_state[axis_index] == 0:
-        print('%s pressed' % axis_names[axis_index])
-        axis_state[axis_index] = 1
-      if axis_status > .5 and axis_state[axis_index] == 1:
-        print('%s released' % axis_names[axis_index])
-        axis_state[axis_index] = 0
-
-
 
 class Controller:
   error_string = ''
@@ -95,25 +65,26 @@ class Controller:
       result = 'U'
     return result
 
+  def pygame_tk_check(self, callback, tk_main_dialog = None):
+    """ Run pygame and tk to get latest events """
+    for event in pygame.event.get(): # User did something
+        if event.type == pygame.QUIT: # If user clicked close
+            return
+        # Possible controller actions: JOYAXISMOTION JOYBALLMOTION JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
+        if event.type == pygame.JOYAXISMOTION:
+            callback()
+        if event.type == pygame.JOYBUTTONDOWN:
+            callback()
+        if event.type == pygame.JOYBUTTONUP:
+            callback()
+    if tk_main_dialog:  # Tk is running as well
+      try:
+        tk_main_dialog.update()
+      except:
+        pass # tk_main_dialog has been destroyed.
+
+
   def run(self, callback, tk_main_dialog = None):
+    """ Run pygame and tk event loops """
     while 1:
-      for event in pygame.event.get(): # User did something
-          if event.type == pygame.QUIT: # If user clicked close
-              return
-          # Possible controller actions: JOYAXISMOTION JOYBALLMOTION JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
-          if event.type == pygame.JOYAXISMOTION:
-              #printAxis(self.controller)
-              callback()
-          if event.type == pygame.JOYBUTTONDOWN:
-              #self.buttonPushed()
-              callback()
-          if event.type == pygame.JOYBUTTONUP:
-              #self.buttonReleased()
-              callback()
-      if tk_main_dialog:  # Tk is running as well
-        try:
-          tk_main_dialog.update()
-        except:
-          pass # tk_main_dialog has been destroyed.
-
-
+      self.pygame_tk_check(callback, tk_main_dialog)

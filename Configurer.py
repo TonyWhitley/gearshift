@@ -1,8 +1,8 @@
 # Set values in gearshift.ini to configure shifter and clutch
 
-BUILD_REVISION = 9 # The git commit count
+BUILD_REVISION = 13 # The git commit count
 versionStr = 'Gearshift Configurer V0.1.%d' % BUILD_REVISION
-versionDate = '2018-09-28'
+versionDate = '2018-09-29'
 
 # Python 3
 import tkinter as tk
@@ -28,36 +28,45 @@ gears = {      #tkButton,
   'Reverse'  : [None, None, None, 14]
   }
 
-def setGear(name, controller_o):
-  messagebox.showinfo('', 'Select %s then press OK' % name)
-  for g in range(controller_o.num_buttons):
-    if controller_o.getButtonState(g) == 'D':
-      gears[name][2].set(g)
-      gears[name][1].configure(text=str(g))
-      return g
-  messagebox.showinfo('', 'No gear pressed')
-  gears[name][2].set(None)
-  gears[name][1].configure(text='')
-
-def setClutch(controller_o):
-  messagebox.showinfo('', 'Press the clutch then press OK')
-  for g in range(controller_o.num_axes):
-    print(g, controller_o.getAxis(g))
-    if controller_o.getAxis(g) < 30:
-      return g
-  messagebox.showinfo('', 'Clutch not pressed')
-
-def dummy():
-  pass
 
 #########################
 # The tab's public class:
 #########################
 class Tab:
+  def setGear(self, name, controller_o):
+    messagebox.showinfo('', 'Select %s then press OK' % name)
+    # Run pygame and tk to get latest input
+    controller_o.pygame_tk_check(self.dummy, self.parentFrame)
+    for g in range(controller_o.num_buttons):
+      if controller_o.getButtonState(g) == 'D':
+        gears[name][2].set(g)
+        gears[name][1].configure(text=str(g))
+        return g
+    messagebox.showerror('No gear pressed', 'Input not changed')
+    #gears[name][2].set(None)
+    #gears[name][1].configure(text='')
+
+  def dummy(self):
+    pass
+
+  def setClutch(self, controller_o):
+    messagebox.showinfo('', 'Press the clutch then press OK')
+    # Run pygame and tk to get latest input
+    controller_o.pygame_tk_check(self.dummy, self.parentFrame)
+    for g in range(controller_o.num_axes):
+      if self.reverse.get() == 0 and controller_o.getAxis(g) < 30:
+        self.clutchAxis.set(g)
+        return g
+      if self.reverse.get() == 1 and controller_o.getAxis(g) > 70:
+        self.clutchAxis.set(g)
+        return g
+    messagebox.showerror('Clutch not pressed', 'Axis not changed')
+
   def __init__(self, parentFrame):
     """ Put this into the parent frame """
     self.controller_o = Controller()
     self.config_o = Config()
+    self.parentFrame = parentFrame
 
     tkLabelTitle = tk.Label(parentFrame, 
                             text='%s %s' % (versionStr, versionDate))
@@ -76,11 +85,11 @@ class Tab:
     ##########################################################
     for _gear, (name, gear) in enumerate(gears.items()):
       gears[name][0] = tk.Button(tkFrame_Shifter, text=name, width=12, 
-                                 command=lambda n=name, w=self.controller_o: setGear(n,w))
+                                 command=lambda n=name, w=self.controller_o: self.setGear(n,w))
       gears[name][0].grid(row = _gear+2, sticky='w')
       gear[3] = self.config_o.get('shifter', name)
       gears[name][1] = tk.Label(tkFrame_Shifter, text=gear[3])
-      gears[name][1].grid(row = _gear+2, column=2, sticky='w')
+      gears[name][1].grid(row = _gear+2, column=1, sticky='w')
       gears[name][2] = tk.StringVar()
     for name, gear in gears.items():
       gear[2].set(self.config_o.get('shifter', name))
@@ -90,7 +99,7 @@ class Tab:
     ##########################################################
 
     tkFrame_Clutch = tk.LabelFrame(parentFrame, text='Clutch', padx=xPadding)
-    tkFrame_Clutch.grid(column=3, row=2, sticky='ew')
+    tkFrame_Clutch.grid(column=1, row=2, sticky='ew')
 
     # Create a Tkinter variable
     self.clutchController = tk.StringVar(root)
@@ -98,16 +107,19 @@ class Tab:
     self.clutchController.set(self.config_o.get('clutch', 'controller'))
     #############################
 
+    self.clutchAxis = tk.IntVar(root)
+    self.clutchAxis.set(self.config_o.get('clutch', 'axis'))
     tkButton_selectClutch = tk.Button(tkFrame_Clutch, text='Select clutch', width=12, 
-                                command=lambda w=self.controller_o: setClutch(w))
+                                command=lambda w=self.controller_o: self.setClutch(w))
     tkButton_selectClutch.grid(row = 2, sticky='w')
-
+    tkLabelClutchAxis = tk.Label(tkFrame_Clutch, textvariable=self.clutchAxis)
+    tkLabelClutchAxis.grid(row=2, column=1, sticky='w')
     #############################
     tkLabel_clutchBitePoint = tk.Label(tkFrame_Clutch, text='Clutch bite point')
     tkLabel_clutchBitePoint.grid(column=0, row=3, sticky='e')
 
     self.tkScale_clutchBitePoint = tk.Scale(tkFrame_Clutch, from_=0, to=100, orient=tk.HORIZONTAL)
-    self.tkScale_clutchBitePoint.grid(column=1, row=3, sticky='ewns')
+    self.tkScale_clutchBitePoint.grid(column=1, row=3, sticky='w')
     self.tkScale_clutchBitePoint.set(self.config_o.get('clutch', 'bite point'))
     #############################
 
@@ -145,10 +157,10 @@ class Tab:
         background='green',
         font=buttonFont,
         command=self.save)
-    self.tkButtonSave.grid(column=2, row=3, pady=25)
+    self.tkButtonSave.grid(column=1, row=3, pady=25)
     #############################
 
-    self.controller_o.run(dummy, parentFrame)
+    self.controller_o.run(self.dummy, parentFrame)
 
   def controllerChoice(self, parent, tkvar):
     # List with options
@@ -158,7 +170,7 @@ class Tab:
  
     popupMenu = tk.OptionMenu(parent, tkvar, *choices)
     tk.Label(parent, text="Choose a controller").grid(row = 0, column = 0)
-    popupMenu.grid(row=0, column=2)
+    popupMenu.grid(row=0, column=1)
  
     #############################
     # on change dropdown value

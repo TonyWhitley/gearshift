@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>fdaabd5a-afee-4b2a-9386-b1b31d9b09ab</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Configurer.py</StartupFile>
+    <StartupFile>Gearshift.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

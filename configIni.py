@@ -3,11 +3,35 @@ import os
 
 configFileName = 'gearshift.ini'
 sections = ['clutch', 'shifter', 'miscellaneous']
-clutchValues = ['controller', 'axis', 'reversed', 'bite point']
-shifterValues = ['controller', '1st gear', '2nd gear', '3rd gear', '4th gear', 
-                 '5th gear', '6th gear', '7th gear', '8th gear', 'Reverse']
-miscValues = ['damage', 'wav file', 'debug', 'test mode', 'double declutch', 
-              'preselector', 'reshift', 'neutral button']
+clutchValues = {
+  'controller' : 'Not yet selected',
+  'axis'       : '0',
+  'reversed'   : '0',
+  'bite point' : '90'
+ }
+shifterValues = {
+  'controller' : 'Not yet selected',
+  '1st gear' : '0',
+  '2nd gear' : '0',
+  '3rd gear' : '0',
+  '4th gear' : '0',
+ 
+  '5th gear' : '0',
+  '6th gear' : '0',
+  '7th gear' : '0',
+  '8th gear' : '0',
+  'Reverse'  : '0'
+  }
+miscValues = {
+  'damage'          : '0',
+  'wav file'        : 'Grind_default.wav',
+  'debug'           : '0',
+  'test mode'       : '0',
+  'double declutch' : '0',
+  'preselector'     : '0',
+  'reshift'         : '1',
+  'neutral button'  : 'DIK_NUMPAD0'
+  }
 
 
 class Config:
@@ -19,12 +43,12 @@ class Config:
     if os.path.exists(configFileName):
       self.config.read(configFileName)
     else: # set default values
-      for val in clutchValues:
-        self.set('clutch', val, '')
-      for val in shifterValues:
-          self.set('shifter', val, '')
-      for val in miscValues:
-          self.set('miscellaneous', val, '')
+      for val, default in clutchValues.items():
+          self.set('clutch', val, default)
+      for val, default in shifterValues.items():
+          self.set('shifter', val, default)
+      for val, default in miscValues.items():
+          self.set('miscellaneous', val, default)
       self.write()
       return
 

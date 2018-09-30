@@ -17,9 +17,9 @@
 #print('pygame %s' % ver)
 #print('Hello from the pygame community. https://www.pygame.org/contribute.html')
 
-BUILD_REVISION = 8 # The git commit count
+BUILD_REVISION = 15 # The git commit count
 versionStr = 'gearshift V1.5.%d' % BUILD_REVISION
-versionDate = '2018-09-28'
+versionDate = '2018-09-30'
 
 print(versionStr, versionDate)
 

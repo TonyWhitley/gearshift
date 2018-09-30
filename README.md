@@ -6,7 +6,7 @@ Inspired by the "Grinding Tranny Mod" (http://www.richardjackett.com/grindingtra
 Nothing is specific to rFactor, gearshift will work with other games including rF1.
 
 # Installing
-1. Go to the [Releases page](releases) and download the latest **gearshift.exe, Configurer.exe** and **Grind_default.wav** to a folder on your PC.
+1. Go to the [Releases page](../../releases) and download the latest **gearshift.exe, Configurer.exe** and **Grind_default.wav** to a folder on your PC.
 
 2. Run Configurer.exe to set up for your shifter and pedals (that creates gearshift.ini).
 

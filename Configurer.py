@@ -1,8 +1,8 @@
 # Set values in gearshift.ini to configure shifter and clutch
 
-BUILD_REVISION = 15 # The git commit count
+BUILD_REVISION = 20 # The git commit count
 versionStr = 'Gearshift Configurer V0.1.%d' % BUILD_REVISION
-versionDate = '2018-09-30'
+versionDate = '2018-10-01'
 
 # Python 3
 import tkinter as tk
@@ -211,6 +211,7 @@ class clutchFrame(Tab):
 
   def save(self):
     self.config_o.set('clutch','controller', self.clutchController.get())
+    self.config_o.set('clutch','axis', str(self.clutchAxis.get()))
     self.config_o.set('clutch', 'bite point', str(self.tkScale_clutchBitePoint.get()))
     self.config_o.set('miscellaneous', 'damage', str(self.damage.get()))
     self.config_o.set('clutch', 'reverse', str(self.reverse.get()))

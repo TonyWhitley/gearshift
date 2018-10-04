@@ -1,6 +1,7 @@
 # G25 wheel class
 
 import pygame
+import sys
 
 """
 G25 Axes:
@@ -20,6 +21,19 @@ class Controller:
   num_axes = 0
   controllerNames = []
 
+  def get_name(self, controller):
+    """
+    pygame's get_name() can give an exception "invalid utf-8 character"
+    """
+    _name = 'Error getting controller name'
+    try:
+      _name = controller.get_name()
+    except UnicodeError as e:
+      _name = 'Unicode error getting controller name'
+    except:
+      _name = 'Other error getting controller name'
+      print("Unexpected error:", sys.exc_info()[0])
+    return _name
   def __init__(self):
     pygame.init()
 
@@ -32,13 +46,13 @@ class Controller:
     self.controllerNames = []
     for j in range(self.num_controllers):
       _j = pygame.joystick.Joystick(j)
-      self.controllerNames.append(_j.get_name())
+      self.controllerNames.append(self.get_name(_j))
 
   def selectController(self, controllerName):
     self.controller = pygame.joystick.Joystick(0) # fallback value
     for j in range(self.num_controllers):
       _j = pygame.joystick.Joystick(j)
-      if _j.get_name() == controllerName:
+      if self.get_name(_j) == controllerName:
         self.controller = pygame.joystick.Joystick(j)
 
     self.controller.init()

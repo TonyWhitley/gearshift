@@ -50,7 +50,10 @@ class Config:
       for val, default in miscValues.items():
           self.set('miscellaneous', val, default)
       self.write()
-      return
+      # then configure the controller(s)
+      from Configurer import main
+      main()
+      self.config.read(configFileName)
 
   def set(self, section, val, value):
     # update existing value

@@ -1,8 +1,8 @@
 # Set values in gearshift.ini to configure shifter and clutch
 
-BUILD_REVISION = 20 # The git commit count
+BUILD_REVISION = 27 # The git commit count
 versionStr = 'Gearshift Configurer V0.1.%d' % BUILD_REVISION
-versionDate = '2018-10-01'
+versionDate = '2018-10-04'
 
 # Python 3
 import tkinter as tk
@@ -107,18 +107,18 @@ class shifterFrame(Tab):
     self.tkFrame_Shifter = tk.LabelFrame(parentFrame, text='Shifter', padx=self.xyPadding,  pady=self.xyPadding)
 
     # Create a Tkinter variable
-    self.shifterController = tk.StringVar(root)
+    self.shifterController = tk.StringVar(parentFrame)
 
     self.controllerChoice(self.tkFrame_Shifter, self.shifterController)
 
     ##########################################################
     for _gear, (name, gear) in enumerate(gears.items()):
-      gears[name][0] = tk.Button(self.tkFrame_Shifter, text=name, width=12, 
+      gears[name][0] = tk.Button(self.tkFrame_Shifter, text='Select ' + name, width=12, 
                                  command=lambda n=name, w=super().controller_o: self.setGear(n,w))
-      gears[name][0].grid(row = _gear+2, sticky='w')
+      gears[name][0].grid(row = _gear+2, sticky='w', pady=3)
       gear[3] = super().config_o.get('shifter', name)
       gears[name][1] = tk.Label(self.tkFrame_Shifter, 
-                                text=gear[3],
+                                text=gear[3], fg = 'SystemInactiveCaptionText',
                                 relief=tk.GROOVE, width=1,
                                 borderwidth=4, anchor='e', padx=4)
       gears[name][1].grid(row = _gear+2, column=1, sticky='w')
@@ -149,12 +149,12 @@ class clutchFrame(Tab):
     self.tkFrame_Clutch = tk.LabelFrame(parentFrame, text='Clutch', padx=self.xyPadding)
 
     # Create a Tkinter variable
-    self.clutchController = tk.StringVar(root)
+    self.clutchController = tk.StringVar(parentFrame)
     self.controllerChoice(self.tkFrame_Clutch, self.clutchController)
     self.clutchController.set(self.config_o.get('clutch', 'controller'))
     #############################
 
-    self.clutchAxis = tk.IntVar(root)
+    self.clutchAxis = tk.IntVar(parentFrame)
     self.clutchAxis.set(self.config_o.get('clutch', 'axis'))
     tkButton_selectClutch = tk.Button(self.tkFrame_Clutch, text='Select clutch', width=12, 
                                 command=lambda w=self.controller_o: self.setClutch(w))
@@ -216,8 +216,7 @@ class clutchFrame(Tab):
     self.config_o.set('miscellaneous', 'damage', str(self.damage.get()))
     self.config_o.set('clutch', 'reverse', str(self.reverse.get()))
   
-if __name__ == '__main__':
-  # To run this tab by itself for development
+def main():
   root = tk.Tk()
   root.title('%s' % (versionStr))
   tabOptions = ttk.Frame(root, width=1200, height=1200, relief='sunken', borderwidth=5)
@@ -225,3 +224,7 @@ if __name__ == '__main__':
     
   o_tab = Tab(tabOptions)
   root.mainloop()
+
+if __name__ == '__main__':
+  # To run this tab by itself for development
+  main()

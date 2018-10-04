@@ -17,11 +17,15 @@
 #print('pygame %s' % ver)
 #print('Hello from the pygame community. https://www.pygame.org/contribute.html')
 
-BUILD_REVISION = 15 # The git commit count
+from directInputKeySend import DirectInputKeyCodeTable
+
+BUILD_REVISION = 27 # The git commit count
 versionStr = 'gearshift V1.5.%d' % BUILD_REVISION
-versionDate = '2018-09-30'
+versionDate = '2018-10-04'
 
 print(versionStr, versionDate)
+print('https://github.com/TonyWhitley/gearshift')
+print()
 
 
 # Translated from gearshift.ahk V1.5 tjw 2017-12-28
@@ -93,7 +97,13 @@ def msgBox(str):
   print(str)
 
 #################################################################################
+def quit(errorCode):
+  # User presses a key before exiting program
+  print('\n\nPress Enter to exit')
+  input()
+  exit(errorCode)
 
+#################################################################################
 class graunch:
   def __init__(self):
         self.graunching = False
@@ -319,66 +329,6 @@ def WatchClutch():
 def ShowButtons():
   pass
 
-""" TBD
-
-    #SetFormat, float, 03  # Omit decimal point from axis position percentages.
-
-    neutral = "Neutral"
-
-    Loop, ForwardGears
-
-        gear = Shiftera_index
-        GetKeyState, Geara_index, ShifterNumbergear
-        _i = a_index
-        joyButton := _i-1 + firstGearJoyButton
-        _gear = ShifterNumberJoyjoyButton
-        GetKeyState, Geara_index, ShifterNumberJoyjoyButton
-        if Geara_index = D
-
-            Geara_index := "Selected"
-            neutral := ""
-
-        else
-
-            Geara_index := ""
-
-
-
-    GetKeyState, Clutch,ClutchNumberClutchAxis
-    GetKeyState, GearR, ShifterNumberShifterR
-    GetKeyState, Esc,   Escape
-
-    if GearR = D
-
-        GearR := "Selected"
-        neutral := ""
-
-    else
-
-        GearR := ""
-
-
-    if ReverseClutchAxis = True
-
-        if Clutch > ClutchEngaged
-            ClutchState := "disengaged"
-        else
-            ClutchState := "engaged"
-
-    else
-
-        if Clutch < ClutchEngaged
-            ClutchState := "disengaged"
-        else
-            ClutchState := "engaged"
-
-
-    ToolTip, Test Mode`n`nClutch: Clutch ClutchState`nGear 1: Gear1`nGear 2: Gear2`nGear 3: Gear3`nGear 4: Gear4`nGear 5: Gear5`nGear 6: Gear6`nGear R: GearR`nneutral`n`nEsc to exit
-    if Esc = D
-        ExitApp
-    return
-"""
-
 if __name__ == "__main__":
   config_o = Config()
   debug = config_o.get('miscellaneous', 'debug')
@@ -396,20 +346,42 @@ if __name__ == "__main__":
   neutralButton = config_o.get('miscellaneous', 'neutral button')
 
   shifterController_o = Controller()
-  shifterController_o.selectController(config_o.get('shifter', 'controller'))
+  shifterControllerName = config_o.get('shifter', 'controller')
+  shifterController_o.selectController(shifterControllerName)
   clutchController_o = Controller()
-  clutchController_o.selectController(config_o.get('clutch', 'controller'))
+  clutchControllerName = config_o.get('clutch', 'controller')
+  clutchController_o.selectController(clutchControllerName)
   clutchAxis = config_o.get('clutch', 'axis')
   ClutchEngaged = config_o.get('clutch', 'bite point')
   ReverseClutchAxis = config_o.get('clutch', 'reversed')
 
   if shifterController_o.error:
     print(shifterController_o.error_string)
-    exit()
+    quit(80)
   if clutchController_o.error:
     print(clutchController_o.error_string)
-    exit()
+    quit(81)
 
+  if len(shifterControllerName) < 3:
+    print('Shifter Controller "%s" not valid.  Please run Configurer.exe again.' % shifterControllerName)
+    quit(90)
+  if len(clutchControllerName) < 3:
+    print('Clutch Controller "%s" not valid.  Please run Configurer.exe again.' % clutchControllerName)
+    quit(91)
+
+  print('Ready for shifts on "%s"\nusing clutch on "%s".' %
+       (shifterControllerName,clutchControllerName))
+  if neutralButton in DirectInputKeyCodeTable: # (it must be)
+    _neutralButton = neutralButton[4:]
+  else:
+    print('\ngearshift.ini "neutral button" entry "%s" not recognised.\nIt must be one of:' % neutralButton)
+    for _keyCode in DirectInputKeyCodeTable:
+      print(_keyCode, end=', ')
+    quit(99)
+
+  print('\nIf gear selection fails %s will be sent to\nthe active window until you reselect a gear.' % 
+        _neutralButton)
+  print('\nYou can minimise this window now.\nDo not close it until you have finished racing.')
   graunch_o = graunch()
 
   if TestMode == False:

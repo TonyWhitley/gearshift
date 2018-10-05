@@ -33,6 +33,7 @@
     <Compile Include="directInputKeySend.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Mmap_for_DSPS_V22.py" />
     <Compile Include="wheel.py">
       <SubType>Code</SubType>
     </Compile>

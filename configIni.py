@@ -23,6 +23,7 @@ shifterValues = {
   'Reverse'  : '0'
   }
 miscValues = {
+  'shared memory'   : '1',
   'damage'          : '0',
   'wav file'        : 'Grind_default.wav',
   'debug'           : '0',

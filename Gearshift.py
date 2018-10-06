@@ -19,9 +19,9 @@
 
 from directInputKeySend import DirectInputKeyCodeTable
 
-BUILD_REVISION = 27 # The git commit count
-versionStr = 'gearshift V1.5.%d' % BUILD_REVISION
-versionDate = '2018-10-04'
+BUILD_REVISION = 30 # The git commit count
+versionStr = 'gearshift V2.0.%d' % BUILD_REVISION
+versionDate = '2018-10-06'
 
 print(versionStr, versionDate)
 print('https://github.com/TonyWhitley/gearshift')
@@ -36,6 +36,7 @@ from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
 from configIni import Config
 import directInputKeySend
 from wheel import Controller
+from memoryMapInputs import Controls
 
 ForwardGears = 6            # Plus reverse
 ReverseClutchAxis = False   # If True then the clutch input goes from 100 (down) to 0 (up)
@@ -249,15 +250,12 @@ def gearStateMachine(event):
 
 
 
-def WatchClutch():
-    # clutch
-    global ClutchPrev
-    global KeyToHoldDown
-    ClutchState = 1 # engaged
-
-    Clutch = GetClutchState()
+def WatchClutch(Clutch):
     # Clutch 100 is up, 0 is down to the floor
     # Unless ReverseClutchAxis is True when it's the opposite.
+    global ClutchPrev
+    ClutchState = 1 # engaged
+
     if ReverseClutchAxis == False:
         if Clutch < ClutchEngaged:
             ClutchState = 0  # clutch is disengaged
@@ -273,6 +271,10 @@ def WatchClutch():
 
     ClutchPrev = ClutchState
 
+def WatchClutchAndShifter():
+    global KeyToHoldDown
+
+    WatchClutch(GetClutchState())
 
     Gear1 = GetKeyState(Shifter1)
     Gear2 = GetKeyState(Shifter2)
@@ -318,12 +320,22 @@ def WatchClutch():
             gearStateMachine(gearSelect)
 
     # Otherwise, release the previous key and press down the new key:
-    SetKeyDelay = -1  # Avoid delays between keystrokes.
+    # AHK only  SetKeyDelay = -1  # Avoid delays between keystrokes.
+
     if KeyToHoldDownPrev:   # There is a previous key to release.
          directInputKeySend.ReleaseKey(KeyToHoldDownPrev)  # Release it.
     return
 
-    #############################################################
+#############################################################
+
+def memoryMapCallback(clutchEvent=None, gearEvent=None):
+  if clutchEvent:
+    WatchClutch(clutchEvent)
+  if gearEvent != None:
+    if gearEvent == 0: # Neutral
+            gearStateMachine(gearDeselect)
+    else:
+            gearStateMachine(gearSelect)
 
 
 def ShowButtons():
@@ -333,6 +345,7 @@ if __name__ == "__main__":
   config_o = Config()
   debug = config_o.get('miscellaneous', 'debug')
   if not debug: debug = 0
+  sharedMemory = config_o.get('miscellaneous', 'shared memory')
   graunchWav = config_o.get('miscellaneous', 'wav file')
   Shifter1 = config_o.get('shifter', '1st gear')
   Shifter2 = config_o.get('shifter', '2nd gear')
@@ -343,34 +356,11 @@ if __name__ == "__main__":
   Shifter7 = config_o.get('shifter', '7th gear')
   Shifter8 = config_o.get('shifter', '8th gear')
   ShifterR = config_o.get('shifter', 'reverse')
-  neutralButton = config_o.get('miscellaneous', 'neutral button')
 
-  shifterController_o = Controller()
-  shifterControllerName = config_o.get('shifter', 'controller')
-  shifterController_o.selectController(shifterControllerName)
-  clutchController_o = Controller()
-  clutchControllerName = config_o.get('clutch', 'controller')
-  clutchController_o.selectController(clutchControllerName)
-  clutchAxis = config_o.get('clutch', 'axis')
   ClutchEngaged = config_o.get('clutch', 'bite point')
   ReverseClutchAxis = config_o.get('clutch', 'reversed')
 
-  if shifterController_o.error:
-    print(shifterController_o.error_string)
-    quit(80)
-  if clutchController_o.error:
-    print(clutchController_o.error_string)
-    quit(81)
-
-  if len(shifterControllerName) < 3:
-    print('Shifter Controller "%s" not valid.  Please run Configurer.exe again.' % shifterControllerName)
-    quit(90)
-  if len(clutchControllerName) < 3:
-    print('Clutch Controller "%s" not valid.  Please run Configurer.exe again.' % clutchControllerName)
-    quit(91)
-
-  print('Ready for shifts on "%s"\nusing clutch on "%s".' %
-       (shifterControllerName,clutchControllerName))
+  neutralButton = config_o.get('miscellaneous', 'neutral button')
   if neutralButton in DirectInputKeyCodeTable: # (it must be)
     _neutralButton = neutralButton[4:]
   else:
@@ -384,9 +374,38 @@ if __name__ == "__main__":
   print('\nYou can minimise this window now.\nDo not close it until you have finished racing.')
   graunch_o = graunch()
 
-  if TestMode == False:
-      #SetTimer(WatchClutch, 10)
-      shifterController_o.run(WatchClutch)
-  else:
-      SetTimer(ShowButtons, 100)
+  if sharedMemory == 0:
+    shifterController_o = Controller()
+    shifterControllerName = config_o.get('shifter', 'controller')
+    shifterController_o.selectController(shifterControllerName)
+    clutchController_o = Controller()
+    clutchControllerName = config_o.get('clutch', 'controller')
+    clutchController_o.selectController(clutchControllerName)
+    clutchAxis = config_o.get('clutch', 'axis')
 
+    if shifterController_o.error:
+      print(shifterController_o.error_string)
+      quit(80)
+    if clutchController_o.error:
+      print(clutchController_o.error_string)
+      quit(81)
+
+    if len(shifterControllerName) < 3:
+      print('Shifter Controller "%s" not valid.  Please run Configurer.exe again.' % shifterControllerName)
+      quit(90)
+    if len(clutchControllerName) < 3:
+      print('Clutch Controller "%s" not valid.  Please run Configurer.exe again.' % clutchControllerName)
+      quit(91)
+
+    print('Ready for shifts on "%s"\nusing clutch on "%s".' %
+         (shifterControllerName,clutchControllerName))
+
+    if TestMode == False:
+        #SetTimer(WatchClutch, 10)
+        shifterController_o.run(WatchClutchAndShifter)
+    else:
+        SetTimer(ShowButtons, 100)
+
+  else: # Using shared memory, reading clutch state and gear selected direct from rF2
+    controls_o = Controls()
+    controls_o.run(memoryMapCallback)

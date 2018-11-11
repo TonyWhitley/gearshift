@@ -7,18 +7,27 @@ from threading import Timer
 
 from Mmap_for_DSPS_V22 import SimInfo
 
-tickInterval = 0.1 # seconds
+tickInterval = 1 #0.1 # seconds
 
 class Controls:
-  def __init__(self):
+  def __init__(self, debug=0):
+    self.debug = debug
     self.info = SimInfo()
-    self.clutchState = self.__readClutch()
-    self.currentGear = self.__readGear()
+    if self.debug > 5:
+      self.clutchState = 0
+      self.currentGear = 0
+    else:
+      self.clutchState = self.__readClutch()
+      self.currentGear = self.__readGear()
   def __readClutch(self):
+    if self.debug > 5:
+      return 100 # clutch is not pressed
     _c = self.info.Rf2Tele.mVehicles[0].mUnfilteredClutch # 1.0 clutch down, 0 clutch up
     # We want 100 clutch released, 0 clutch pressed
     return -(_c-1)*100
   def __readGear(self):
+    if self.debug > 5:
+      return 1  # trying to get first
     return self.info.Rf2Tele.mVehicles[0].mGear  # -1 to number of gears, 0 is neutral
   def monitor(self):
     # Run every tickInterval

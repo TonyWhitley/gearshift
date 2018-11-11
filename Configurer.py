@@ -185,26 +185,26 @@ class clutchFrame(Tab):
     self.damage.set(x)
 
     #############################
-    self.reverse = tk.IntVar()
+    self.reversed = tk.IntVar()
     self.tkCheckbutton_Reverse = tk.Checkbutton(self.tkFrame_Clutch, 
-                                                var=self.reverse,
+                                                var=self.reversed,
                                                 text='Clutch readings are reversed')
 
     self.tkCheckbutton_Reverse.grid(sticky='w', columnspan=2)
     x = self.config_o.get('clutch', 'reversed')
     if not x:
       x = 0
-    self.reverse.set(x)
+    self.reversed.set(x)
 
   def setClutch(self, controller_o):
     messagebox.showinfo('', 'Press the clutch then press OK')
     # Run pygame and tk to get latest input
     controller_o.pygame_tk_check(self.dummy, self.parentFrame)
     for g in range(controller_o.num_axes):
-      if self.reverse.get() == 0 and controller_o.getAxis(g) < 30:
+      if self.reversed.get() == 0 and controller_o.getAxis(g) < 30:
         self.clutchAxis.set(g)
         return g
-      if self.reverse.get() == 1 and controller_o.getAxis(g) > 70:
+      if self.reversed.get() == 1 and controller_o.getAxis(g) > 70:
         self.clutchAxis.set(g)
         return g
     messagebox.showerror('Clutch not pressed', 'Axis not changed')
@@ -214,7 +214,7 @@ class clutchFrame(Tab):
     self.config_o.set('clutch','axis', str(self.clutchAxis.get()))
     self.config_o.set('clutch', 'bite point', str(self.tkScale_clutchBitePoint.get()))
     self.config_o.set('miscellaneous', 'damage', str(self.damage.get()))
-    self.config_o.set('clutch', 'reverse', str(self.reverse.get()))
+    self.config_o.set('clutch', 'reversed', str(self.reversed.get()))
   
 def main():
   root = tk.Tk()

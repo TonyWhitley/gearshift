@@ -19,9 +19,9 @@
 
 from directInputKeySend import DirectInputKeyCodeTable
 
-BUILD_REVISION = 30 # The git commit count
+BUILD_REVISION = 31 # The git commit count
 versionStr = 'gearshift V2.0.%d' % BUILD_REVISION
-versionDate = '2018-10-06'
+versionDate = '2018-11-11'
 
 print(versionStr, versionDate)
 print('https://github.com/TonyWhitley/gearshift')
@@ -407,5 +407,5 @@ if __name__ == "__main__":
         SetTimer(ShowButtons, 100)
 
   else: # Using shared memory, reading clutch state and gear selected direct from rF2
-    controls_o = Controls()
+    controls_o = Controls(debug=6)
     controls_o.run(memoryMapCallback)

@@ -1,5 +1,6 @@
 # G25 wheel class
 
+import locale
 import pygame
 import sys
 
@@ -29,6 +30,7 @@ class Controller:
     try:
       _name = controller.get_name()
     except UnicodeError as e:
+      print(e.object.decode(locale.getdefaultlocale()[1]))
       _name = 'Unicode error getting controller name'
     except:
       _name = 'Other error getting controller name'

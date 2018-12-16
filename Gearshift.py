@@ -17,11 +17,12 @@
 #print('pygame %s' % ver)
 #print('Hello from the pygame community. https://www.pygame.org/contribute.html')
 
+import os
 from directInputKeySend import DirectInputKeyCodeTable
 
-BUILD_REVISION = 31 # The git commit count
+BUILD_REVISION = 33 # The git commit count
 versionStr = 'gearshift V2.0.%d' % BUILD_REVISION
-versionDate = '2018-11-11'
+versionDate = '2018-12-16'
 
 print(versionStr, versionDate)
 print('https://github.com/TonyWhitley/gearshift')
@@ -102,7 +103,7 @@ def quit(errorCode):
   # User presses a key before exiting program
   print('\n\nPress Enter to exit')
   input()
-  exit(errorCode)
+  os.exit(errorCode)
 
 #################################################################################
 class graunch:

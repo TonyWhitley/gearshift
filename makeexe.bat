@@ -18,8 +18,9 @@ pyinstaller -v
 @echo.
 
 
-if exist env\scripts 	set path=%path%;env\Scripts
-if not exist env\scripts	python.exe -m venv env && env/Scripts/activate && python -m pip install -r requirements.txt 
+if exist envPygame\scripts 	echo Using envPygame\scripts 	
+if exist envPygame\scripts 	set path=envPygame\Scripts;%path%
+if not exist envPygame\scripts	python.exe -m venv envPygame && envPygame/Scripts/activate && python -m pip install -r requirements.txt 
 
 ::   --debug=imports 
 ::  --clean 
@@ -29,6 +30,7 @@ if not exist env\scripts	python.exe -m venv env && env/Scripts/activate && pytho
 pyinstaller ^
   --onefile ^
   --distpath . ^
+  --paths envPygame\lib\site-packages ^
   "%~dp0\gearshift.py "
 pause
 

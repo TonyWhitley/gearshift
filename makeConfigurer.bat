@@ -18,17 +18,19 @@ pyinstaller -v
 @echo.
 
 
-if exist env\scripts 	set path=%path%;env\Scripts
-if not exist env\scripts	python.exe -m venv env && env/Scripts/activate && python -m pip install -r requirements.txt 
+if exist envPygame\scripts 	echo Using envPygame\scripts 	
+if exist envPygame\scripts 	set path=envPygame\Scripts;%path%
+if not exist envPygame\scripts	python.exe -m venv envPygame && envPygame/Scripts/activate && python -m pip install -r requirements.txt 
 
 ::   --debug=imports 
 ::  --clean 
-::  --paths env\Lib\site-packages 
+::  --paths envPygame\Lib\site-packages 
 ::  --hidden-import pygame.base 
 
 pyinstaller ^
   --onefile ^
   --distpath . ^
+  --paths envPygame\lib\site-packages ^
   "%~dp0\Configurer.py "
 pause
 

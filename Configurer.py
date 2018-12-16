@@ -1,8 +1,8 @@
 # Set values in gearshift.ini to configure shifter and clutch
 
-BUILD_REVISION = 27 # The git commit count
-versionStr = 'Gearshift Configurer V0.1.%d' % BUILD_REVISION
-versionDate = '2018-10-04'
+BUILD_REVISION = 33 # The git commit count
+versionStr = 'Gearshift Configurer V0.1.%d DEBUG' % BUILD_REVISION
+versionDate = '2018-12-16'
 
 # Python 3
 import tkinter as tk

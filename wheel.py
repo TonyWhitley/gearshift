@@ -29,8 +29,12 @@ class Controller:
     _name = 'Error getting controller name'
     try:
       _name = controller.get_name()
+      print('get_name()') # DEBUG
+      # _name = 'Logitech® G27 Shifter' # DEBUG 2
+      # print('DEBUG pygame version: %s' % pygame.version.ver)
     except UnicodeError as e:
-      print(e.object.decode(locale.getdefaultlocale()[1]))
+      print('Default locale') # DEBUG
+      print(e.object.decode(locale.getdefaultlocale()[1])) # DEBUG
       _name = 'Unicode error getting controller name'
     except:
       _name = 'Other error getting controller name'

@@ -17,12 +17,13 @@
 #print('pygame %s' % ver)
 #print('Hello from the pygame community. https://www.pygame.org/contribute.html')
 
-import os
+import sys
 from directInputKeySend import DirectInputKeyCodeTable
+from mockMemoryMap import gui
 
-BUILD_REVISION = 33 # The git commit count
+BUILD_REVISION = 34 # The git commit count
 versionStr = 'gearshift V2.0.%d' % BUILD_REVISION
-versionDate = '2018-12-16'
+versionDate = '2019-04-22'
 
 print(versionStr, versionDate)
 print('https://github.com/TonyWhitley/gearshift')
@@ -42,6 +43,7 @@ from memoryMapInputs import Controls
 ForwardGears = 6            # Plus reverse
 ReverseClutchAxis = False   # If True then the clutch input goes from 100 (down) to 0 (up)
 TestMode       =    False   # If True then show shifter and clutch operation
+mockInput      =    False   # If True then use mock input
 
 ClutchEngaged  =    90      # (0 - 100) the point in the travel where the clutch engages
                             # if ReverseClutchAxis then ClutchEngaged = 10
@@ -68,7 +70,7 @@ gearDeselect            = 'gearDeselect'
 #globals 
 gearState = 'neutral' # TBD
 
-ClutchPrev = 0
+ClutchPrev = 2  # Active states are 0 and 1 so 2 is "unknown"
 KeyToHoldDown = 0
 Delete = -1  # delete timer
 
@@ -103,7 +105,7 @@ def quit(errorCode):
   # User presses a key before exiting program
   print('\n\nPress Enter to exit')
   input()
-  os.exit(errorCode)
+  sys.exit(errorCode)
 
 #################################################################################
 class graunch:
@@ -330,7 +332,7 @@ def WatchClutchAndShifter():
 #############################################################
 
 def memoryMapCallback(clutchEvent=None, gearEvent=None):
-  if clutchEvent:
+  if clutchEvent != None:
     WatchClutch(clutchEvent)
   if gearEvent != None:
     if gearEvent == 0: # Neutral
@@ -348,6 +350,7 @@ if __name__ == "__main__":
   if not debug: debug = 0
   sharedMemory = config_o.get('miscellaneous', 'shared memory')
   graunchWav = config_o.get('miscellaneous', 'wav file')
+  mockInput = config_o.get('miscellaneous', 'mock input')
   Shifter1 = config_o.get('shifter', '1st gear')
   Shifter2 = config_o.get('shifter', '2nd gear')
   Shifter3 = config_o.get('shifter', '3rd gear')
@@ -408,5 +411,9 @@ if __name__ == "__main__":
         SetTimer(ShowButtons, 100)
 
   else: # Using shared memory, reading clutch state and gear selected direct from rF2
-    controls_o = Controls(debug=6)
+    controls_o = Controls(debug=4)
     controls_o.run(memoryMapCallback)
+    if mockInput:
+      gui()
+      controls_o.stop()
+      pass

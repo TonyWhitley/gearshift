@@ -385,9 +385,12 @@ class SimInfo:
         self.Rf2Ext = rF2Extended.from_buffer(self._rf2_ext)
 
     def close(self):
+      try:
         self._rf2_tele.close()
         self._rf2_scor.close()
         self._rf2_ext.close()
+      except BufferError: # "cannot close exported pointers exist"
+        pass
 
     def __del__(self):
         self.close()
@@ -396,6 +399,9 @@ if __name__ == '__main__':
     # Example usage
     info = SimInfo()
     clutch = info.Rf2Tele.mVehicles[0].mUnfilteredClutch # 1.0 clutch down, 0 clutch up
+    info.Rf2Tele.mVehicles[0].mGear = 1
+    gear   = info.Rf2Tele.mVehicles[0].mGear  # -1 to 6
+    info.Rf2Tele.mVehicles[0].mGear = 2
     gear   = info.Rf2Tele.mVehicles[0].mGear  # -1 to 6
     #TBD driver = info.Rf2Scor.mVehicles[0].mDriverName
     driver = 'Max Snell'

@@ -28,12 +28,16 @@ class MyThread(Thread):
     def __init__(self, callback, tick_interval):
         Thread.__init__(self)
         self.stopped = Event()
+        self._stop_event = Event()
         self.callback = callback
         self.tick_interval = tick_interval
 
     def run(self):
         while not self.stopped.wait(self.tick_interval):
             self.callback()
+
+    def stop(self):
+        self._stop_event.set()
 
 if __name__ == '__main__':
   if 0: 

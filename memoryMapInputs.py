@@ -7,6 +7,7 @@ from scheduler import MyThread
 from ctypes import addressof, c_char_p
 
 from Mmap_for_DSPS_V22 import SimInfo
+from mockMemoryMap import gui
 
 tick_interval = 0.1 # seconds
 
@@ -48,8 +49,11 @@ class Controls:
   def run(self, callback):
     """ Event loop """
     self.callback = callback
-    thread = MyThread(controls_o.monitor, tick_interval)
-    thread.start()
+    self.thread = MyThread(self.monitor, tick_interval)
+    self.thread.start()
+
+  def stop(self):
+    self.thread.stop()
 
 def callback(clutchEvent=None, gearEvent=None):
     clutch = controls_o.clutchState
@@ -61,5 +65,7 @@ if __name__ == '__main__':
     controls_o = Controls()
     controls_o.monitor()  # show initial state
     controls_o.run(callback)
+    gui()
+    controls_o.stop()
 
 

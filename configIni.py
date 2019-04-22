@@ -23,15 +23,18 @@ shifterValues = {
   'Reverse'  : '0'
   }
 miscValues = {
-  'shared memory'   : '1',
-  'damage'          : '0',
+  'shared memory'   : '1',    # 1: read gears, clutch from rF2 shared memory
+  'damage'          : '0',    # 1: damage model active
+  'shifter'         : '1',    # 0: paddles/sequential. Different damage model
+  'double declutch' : '0',    # 1: double declutch required (damage will be worse if not done)  TBD
+  'preselector'     : '0',    # 1: pre-selector gearbox TBD
+  'reshift'         : '0',    # 1: must go to neutral after a bad shift
+  'neutral button'  : 'DIK_NUMPAD0',  # the key code sent to prevent a shift occurring
+  'ignition button' : 'DIK_APOSTROPHE', # the key code sent if the engine is damaged
   'wav file'        : 'Grind_default.wav',
   'debug'           : '0',
-  'test mode'       : '0',
-  'double declutch' : '0',
-  'preselector'     : '0',
-  'reshift'         : '1',
-  'neutral button'  : 'DIK_NUMPAD0'
+  'mock input'      : '0',
+  'test mode'       : '0'
   }
 
 
@@ -40,21 +43,27 @@ class Config:
     # instantiate
     self.config = ConfigParser()
 
-    # parse existing file if there is one
+    # set default values
+    for val, default in clutchValues.items():
+        self.set('clutch', val, default)
+    for val, default in shifterValues.items():
+        self.set('shifter', val, default)
+    for val, default in miscValues.items():
+        self.set('miscellaneous', val, default)
+    
+    # if there is an existing file parse values over those
     if os.path.exists(configFileName):
       self.config.read(configFileName)
-    else: # set default values
-      for val, default in clutchValues.items():
-          self.set('clutch', val, default)
-      for val, default in shifterValues.items():
-          self.set('shifter', val, default)
-      for val, default in miscValues.items():
-          self.set('miscellaneous', val, default)
+    else:
       self.write()
-      # then configure the controller(s)
-      from Configurer import main
-      main()
+      if self.get('miscellaneous', 'shared memory') == 0:
+        # then configure the controller(s)
+        from Configurer import main
+        main()
       self.config.read(configFileName)
+
+    if self.get('miscellaneous', 'shared memory'):
+      self.set('miscellaneous', 'reshift', '0')
 
   def set(self, section, val, value):
     # update existing value
@@ -65,11 +74,11 @@ class Config:
   def get(self, section, val):
     try:
       # get existing value
-      if val in ['controller', 'wav file', 'neutral button'] :
+      if val in ['controller', 'wav file', 'neutral button', 'ignition button'] :
         return self.config.get(section, val)
       else:
         return self.config.getint(section, val)
-    except:
+    except: # No such section in file
       self.set(section, val, '')
       return None
 

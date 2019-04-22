@@ -31,20 +31,37 @@ class Controls:
     if self.debug > 5:
       return 1  # trying to get first
     return self.info.Rf2Tele.mVehicles[0].mGear  # -1 to number of gears, 0 is neutral
+
   def monitor(self):
     # Run every tick_interval
     if self.currentGear != self.__readGear():
       self.currentGear   = self.__readGear()
+      if self.debug > 0:
+        print('[MemoryMapped] gear: %s' % self.currentGear)
       driver = str(c_char_p(addressof(self.info.Rf2Scor.mVehicles[0].mDriverName)).value)
       # still not right, gives "b'svensmiles '"
       #self.info.Rf2Scor.mVehicles[0].mDriverName.value
-      self.callback(gearEvent=self.currentGear)
+      if self.getDriverType() == 0:
+        self.callback(gearEvent=self.currentGear)
+
     if self.clutchState != self.__readClutch():
       self.clutchState   = self.__readClutch()
-      self.callback(clutchEvent=self.clutchState)
-    #print('tick')
-    #Timer(tick_interval, self.monitor, ()).start()
-    #self.t.start()
+      if self.getDriverType() == 0:
+        self.callback(clutchEvent=self.clutchState)
+
+    mEngineRPM = int(self.info.Rf2Tele.mVehicles[0].mEngineRPM)
+    mClutchRPM = int(self.info.Rf2Tele.mVehicles[0].mClutchRPM)
+
+    if self.info.Rf2Tele.mVehicles[0].mUnfilteredClutch < .9: # 1.0 clutch down, 0 clutch up
+      if mClutchRPM > mEngineRPM:
+        #print(mClutchRPM, mEngineRPM)
+        pass
+
+  def getMaxRevs(self):
+    return self.info.Rf2Tele.mVehicles[0].mEngineMaxRPM
+
+  def getDriverType(self):
+    return self.info.Rf2Scor.mVehicles[0].mControl  # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
 
   def run(self, callback):
     """ Event loop """
@@ -65,7 +82,7 @@ if __name__ == '__main__':
     controls_o = Controls()
     controls_o.monitor()  # show initial state
     controls_o.run(callback)
-    gui()
+    gui(controls_o.getMaxRevs())
     controls_o.stop()
 
 

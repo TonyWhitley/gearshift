@@ -14,7 +14,7 @@ GEAR_DELAY = 200.0 / 1000.0   # 100 mS
 TICKOVER = 1000
 
 class Gui:
-  def __init__(self, parentFrame):
+  def __init__(self, parentFrame, maxRevs):
     """ Put this into the parent frame """
     self.parentFrame = parentFrame
     self.info = SimInfo()
@@ -79,7 +79,7 @@ class Gui:
 
     tkScale_EngineRPM = tk.Scale(tkFrame_GraphicsSetup, 
                                   from_=TICKOVER, 
-                                  to=10000, 
+                                  to=maxRevs, 
                                   orient=tk.VERTICAL, 
                                   variable=self.vars['EngineRPM'],
                                   command=self.EngineRPM)
@@ -100,7 +100,7 @@ class Gui:
     tkLabel_ClutchRPM.grid(column=_ClutchRPMCol, row=1, sticky='n')
     tkScale_ClutchRPM = tk.Scale(tkFrame_GraphicsSetup, 
                                   from_=0, 
-                                  to=20000, 
+                                  to=maxRevs*2, 
                                   orient=tk.VERTICAL, 
                                   variable=self.vars['ClutchRPM'],
                                   command=self.ClutchRPM)
@@ -110,6 +110,9 @@ class Gui:
     tkLabel_Graphics_10.grid(column=_ClutchRPMCol, row=2, sticky='nw')
     tkLabel_Graphics_0 = tk.Label(tkFrame_GraphicsSetup, text='Downshift\nover rev')
     tkLabel_Graphics_0.grid(column=_ClutchRPMCol, row=4, sticky='nw')
+
+    # Kick off the tick
+    self.tick()
   
   def _createVar(self, name, value):
     self.vars[name] = tk.StringVar(name=name)
@@ -148,16 +151,30 @@ class Gui:
   def ClutchRPM(self, event):
     self.info.Rf2Tele.mVehicles[0].mClutchRPM = int(self.vars['ClutchRPM'].get())
 
+  ####################################### timed callback
+
+  def tick(self):
+    mEngineRPM = int(self.info.Rf2Tele.mVehicles[0].mEngineRPM)
+    mClutchRPM = int(self.info.Rf2Tele.mVehicles[0].mClutchRPM)
+    self.vars['EngineRPM'].set(mEngineRPM)
+    self.vars['ClutchRPM'].set(mClutchRPM)
+    self.vars['Gear'].set(GEARS[self.info.Rf2Tele.mVehicles[0].mGear+1])
+
+    self.parentFrame.after(200, self.tick)
+
   def on_closing(self):
     self.info.close()
     self.parentFrame.destroy()
 
-def gui():
+  ####################################### Commands
+
+
+def gui(maxRevs=10000):
   root = tk.Tk()
   mockMemoryMap = ttk.Frame(root, width=1200, height=1200, relief='sunken', borderwidth=5)
   mockMemoryMap.grid()
     
-  o_gui = Gui(mockMemoryMap)
+  o_gui = Gui(mockMemoryMap,maxRevs)
   # Trying for a clean shutdown 
   # root.protocol("WM_DELETE_WINDOW", o_gui.on_closing)
   root.mainloop()

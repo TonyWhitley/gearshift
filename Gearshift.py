@@ -21,7 +21,7 @@ import sys
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 34 # The git commit count
+BUILD_REVISION = 35 # The git commit count
 versionStr = 'gearshift V2.0.%d' % BUILD_REVISION
 versionDate = '2019-04-22'
 
@@ -58,6 +58,7 @@ reshift =           True    # If True then neutral has to be selected before
 
 global debug
 debug           =   0       # 0, 1, 2 or 3
+sharedMemory    =   1
 #AutoRepeat     =   0
 #NeutralBtn     The key used to force neutral, whatever the shifter says
 
@@ -216,6 +217,10 @@ def gearStateMachine(event):
                     msgBox('Knocked out of gear')
         elif event == clutchDisengage:
                 gearState = clutchDownGearSelected
+        elif event == gearSelect: # smashed straight through without neutral.
+                # I don't think this can happen if rF2, only with mock inputs...
+                graunch_o.graunchStart()
+                gearState = graunching
 
     elif gearState == graunching:
         if event == clutchDisengage:
@@ -231,11 +236,15 @@ def gearStateMachine(event):
         elif event == clutchEngage:
                 graunch_o.graunchStart()   # graunch again
         elif event == gearDeselect:
-                gearState = neutral
-                graunch_o.graunchStop()
+                if sharedMemory == 0:
+                  # When the Neutral button is banged rF sets gear to Neutral
+                  gearState = neutral
+                  graunch_o.graunchStop()
+                pass
         elif event == gearSelect:
                 graunch_o.graunchStop()
                 graunch_o.graunchStart()   # graunch again
+                pass
 
     elif gearState == graunchingClutchDown:
         if event == clutchEngage:
@@ -351,6 +360,7 @@ if __name__ == "__main__":
   sharedMemory = config_o.get('miscellaneous', 'shared memory')
   graunchWav = config_o.get('miscellaneous', 'wav file')
   mockInput = config_o.get('miscellaneous', 'mock input')
+  reshift = config_o.get('miscellaneous', 'reshift') == 1
   Shifter1 = config_o.get('shifter', '1st gear')
   Shifter2 = config_o.get('shifter', '2nd gear')
   Shifter3 = config_o.get('shifter', '3rd gear')
@@ -365,10 +375,18 @@ if __name__ == "__main__":
   ReverseClutchAxis = config_o.get('clutch', 'reversed')
 
   neutralButton = config_o.get('miscellaneous', 'neutral button')
+  ignitionButton = config_o.get('miscellaneous', 'ignition button')
   if neutralButton in DirectInputKeyCodeTable: # (it must be)
     _neutralButton = neutralButton[4:]
   else:
     print('\ngearshift.ini "neutral button" entry "%s" not recognised.\nIt must be one of:' % neutralButton)
+    for _keyCode in DirectInputKeyCodeTable:
+      print(_keyCode, end=', ')
+    quit(99)
+  if ignitionButton in DirectInputKeyCodeTable: # (it must be)
+    _ignitionButton = ignitionButton[4:]
+  else:
+    print('\ngearshift.ini "ignition button" entry "%s" not recognised.\nIt must be one of:' % ignitionButton)
     for _keyCode in DirectInputKeyCodeTable:
       print(_keyCode, end=', ')
     quit(99)
@@ -411,9 +429,10 @@ if __name__ == "__main__":
         SetTimer(ShowButtons, 100)
 
   else: # Using shared memory, reading clutch state and gear selected direct from rF2
-    controls_o = Controls(debug=4)
+    controls_o = Controls(debug=debug)
     controls_o.run(memoryMapCallback)
     if mockInput:
+      # Testing using the simple GUI to poke inputs into the memory map
       gui()
       controls_o.stop()
       pass

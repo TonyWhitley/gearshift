@@ -26,6 +26,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Configurer.py" />
+    <Compile Include="damage.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="dummyGame.py">
       <SubType>Code</SubType>
     </Compile>

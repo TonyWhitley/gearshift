@@ -21,14 +21,16 @@ import sys
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 35 # The git commit count
-versionStr = 'gearshift V2.0.%d' % BUILD_REVISION
+BUILD_REVISION = 36 # The git commit count
+versionStr = 'gearshift V2.1.%d' % BUILD_REVISION
 versionDate = '2019-04-22'
 
 print(versionStr, versionDate)
-print('https://github.com/TonyWhitley/gearshift')
-print()
-
+print('https://github.com/TonyWhitley/gearshift\n\n'
+ "Reads the clutch and shifter from rF2 using k3nny's Python\n"
+ "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n"
+ "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n"
+ "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n")
 
 # Translated from gearshift.ahk V1.5 tjw 2017-12-28
 
@@ -37,7 +39,7 @@ from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
 
 from configIni import Config
 import directInputKeySend
-from wheel import Controller
+
 from memoryMapInputs import Controls
 
 ForwardGears = 6            # Plus reverse
@@ -397,6 +399,8 @@ if __name__ == "__main__":
   graunch_o = graunch()
 
   if sharedMemory == 0:
+    from wheel import Controller
+
     shifterController_o = Controller()
     shifterControllerName = config_o.get('shifter', 'controller')
     shifterController_o.selectController(shifterControllerName)

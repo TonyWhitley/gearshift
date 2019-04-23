@@ -3,6 +3,7 @@
 # https://forum.studio-397.com/index.php?members/k3nny.35143/
 # Some of the original comments from ISI/S392's InternalsPlugin.hpp
 # restored.
+# https://www.studio-397.com/wp-content/uploads/2016/12/rF2-Example-Plugin-7.7z
 
 import mmap
 import ctypes
@@ -19,9 +20,6 @@ class rF2Vec3(ctypes.Structure):
         ('y', ctypes.c_double),
         ('z', ctypes.c_double),
     ]
-
-# sbyte = ctypes.c_byte
-# byte = ctypes.c_ubyte
 
 class rF2Wheel(ctypes.Structure):
     _pack_ = 4
@@ -70,8 +68,8 @@ class rF2VehicleTelemetry(ctypes.Structure):
         ('mElapsedTime', ctypes.c_double),                        # game session time
         ('mLapNumber', ctypes.c_int),                             # current lap number
         ('mLapStartET', ctypes.c_double),                         # time this lap was started
-        ('mVehicleName', ctypes.c_ubyte*64), # byte               # current vehicle name
-        ('mTrackName', ctypes.c_ubyte*64), # byte                 # current track name
+        ('mVehicleName', ctypes.c_ubyte*64),                      # current vehicle name
+        ('mTrackName', ctypes.c_ubyte*64),                        # current track name
 
         # Position and derivatives
         ('mPos', rF2Vec3),                                        # world position in metres
@@ -119,11 +117,11 @@ class rF2VehicleTelemetry(ctypes.Structure):
 
         # State/damage info
         ('mEngineMaxRPM', ctypes.c_double),                       # rev limit
-        ('mScheduledStops', ctypes.c_ubyte), # byte               # number of scheduled pitstops
-        ('mOverheating', ctypes.c_ubyte), # byte                  # whether overheating icon is shown
-        ('mDetached', ctypes.c_ubyte), # byte                     # whether any parts (besides wheels) have been detached
-        ('mHeadlights', ctypes.c_ubyte), # byte                   # whether headlights are on
-        ('mDentSeverity', ctypes.c_ubyte*8), # byte               # dent severity at 8 locations around the car (0=none, 1=some, 2=more)
+        ('mScheduledStops', ctypes.c_ubyte),                      # number of scheduled pitstops
+        ('mOverheating', ctypes.c_ubyte),                         # whether overheating icon is shown
+        ('mDetached', ctypes.c_ubyte),                            # whether any parts (besides wheels) have been detached
+        ('mHeadlights', ctypes.c_ubyte),                          # whether headlights are on
+        ('mDentSeverity', ctypes.c_ubyte*8),                      # dent severity at 8 locations around the car (0=none, 1=some, 2=more)
         ('mLastImpactET', ctypes.c_double),                       # time of last impact
         ('mLastImpactMagnitude', ctypes.c_double),                # magnitude of last impact
         ('mLastImpactPos', rF2Vec3),                              # location of last impact
@@ -131,22 +129,22 @@ class rF2VehicleTelemetry(ctypes.Structure):
         # Expanded
         ('mEngineTorque', ctypes.c_double),                       # current engine torque (including additive torque) (used to be mEngineTq, but there's little reason to abbreviate it)
         ('mCurrentSector', ctypes.c_int),                         # the current sector (zero-based) with the pitlane stored in the sign bit (example: entering pits from third sector gives 0x80000002)
-        ('mSpeedLimiter', ctypes.c_ubyte), # byte                 # whether speed limiter is on
-        ('mMaxGears', ctypes.c_ubyte), # byte                     # maximum forward gears
-        ('mFrontTireCompoundIndex', ctypes.c_ubyte), # byte       # index within brand
-        ('mRearTireCompoundIndex', ctypes.c_ubyte), # byte        # index within brand
+        ('mSpeedLimiter', ctypes.c_ubyte),                        # whether speed limiter is on
+        ('mMaxGears', ctypes.c_ubyte),                            # maximum forward gears
+        ('mFrontTireCompoundIndex', ctypes.c_ubyte),              # index within brand
+        ('mRearTireCompoundIndex', ctypes.c_ubyte),               # index within brand
         ('mFuelCapacity', ctypes.c_double),                       # capacity in litres
-        ('mFrontFlapActivated', ctypes.c_ubyte), # byte           # whether front flap is activated
-        ('mRearFlapActivated', ctypes.c_ubyte), # byte            # whether rear flap is activated
-        ('mRearFlapLegalStatus', ctypes.c_ubyte), # byte          # 0=disallowed, 1=criteria detected but not allowed quite yet, 2=allowed
-        ('mIgnitionStarter', ctypes.c_ubyte), # byte              # 0=off 1=ignition 2=ignition+starter
+        ('mFrontFlapActivated', ctypes.c_ubyte),                  # whether front flap is activated
+        ('mRearFlapActivated', ctypes.c_ubyte),                   # whether rear flap is activated
+        ('mRearFlapLegalStatus', ctypes.c_ubyte),                 # 0=disallowed, 1=criteria detected but not allowed quite yet, 2=allowed
+        ('mIgnitionStarter', ctypes.c_ubyte),                     # 0=off 1=ignition 2=ignition+starter
 
-        ('mFrontTireCompoundName', ctypes.c_ubyte*18), # byte     # name of front tire compound
-        ('mRearTireCompoundName', ctypes.c_ubyte*18), # byte      # name of rear tire compound
+        ('mFrontTireCompoundName', ctypes.c_ubyte*18),            # name of front tire compound
+        ('mRearTireCompoundName', ctypes.c_ubyte*18),             # name of rear tire compound
 
-        ('mSpeedLimiterAvailable', ctypes.c_ubyte), # byte        # whether speed limiter is available
-        ('mAntiStallActivated', ctypes.c_ubyte), # byte           # whether (hard) anti-stall is activated
-        ('mUnused', ctypes.c_ubyte*2), # byte                     #
+        ('mSpeedLimiterAvailable', ctypes.c_ubyte),               # whether speed limiter is available
+        ('mAntiStallActivated', ctypes.c_ubyte),                  # whether (hard) anti-stall is activated
+        ('mUnused', ctypes.c_ubyte*2),                            #
         ('mVisualSteeringWheelRange', ctypes.c_float),            # the *visual* steering wheel range
 
         ('mRearBrakeBias', ctypes.c_double),                      # fraction of brakes on rear
@@ -155,10 +153,10 @@ class rF2VehicleTelemetry(ctypes.Structure):
         ('mPhysicalSteeringWheelRange', ctypes.c_float),          # the *physical* steering wheel range
 
         # Future use
-        ('mExpansion', ctypes.c_ubyte*152), # byte
+        ('mExpansion', ctypes.c_ubyte*152),       
 
         # keeping this at the end of the structure to make it easier to replace in future versions
-        ('mWheels', rF2Wheel*4), # byte
+        ('mWheels', rF2Wheel*4),       
     ]
 
 
@@ -176,31 +174,51 @@ class rF2Telemetry(ctypes.Structure):
 class rF2ScoringInfo(ctypes.Structure):
     _pack_ = 4
     _fields_ = [
-        ('mTrackName', ctypes.c_ubyte*64), # byte
-        ('mSession', ctypes.c_int),
-        ('mCurrentET', ctypes.c_double),
-        ('mEndET', ctypes.c_double),
-        ('mMaxLaps', ctypes.c_int),
-        ('mLapDist', ctypes.c_double),
-        ('pointer1', ctypes.c_ubyte*8), # byte
-        ('mNumVehicles', ctypes.c_int),
-        ('mGamePhase', ctypes.c_ubyte), # byte
-        ('mYellowFlagState', ctypes.c_byte), # sbyte
-        ('mSectorFlag', ctypes.c_byte*3), # sbyte
-        ('mStartLight', ctypes.c_ubyte), # byte
-        ('mNumRedLights', ctypes.c_ubyte), # byte
-        ('mInRealtime', ctypes.c_ubyte), # byte                  # in realtime as opposed to at the monitor
-        ('mPlayerName', ctypes.c_ubyte*32), # byte
-        ('mPlrFileName', ctypes.c_ubyte*64), # byte
-        ('mDarkCloud', ctypes.c_double),
-        ('mRaining', ctypes.c_double),
-        ('mAmbientTemp', ctypes.c_double),
-        ('mTrackTemp', ctypes.c_double),
-        ('mWind', rF2Vec3),
-        ('mMinPathWetness', ctypes.c_double),
-        ('mMaxPathWetness', ctypes.c_double),
-        ('mExpansion', ctypes.c_ubyte*256), # byte
-        ('pointer2', ctypes.c_ubyte*8), # byte
+        ('mTrackName', ctypes.c_ubyte*64),                        # current track name
+        ('mSession', ctypes.c_int),                               # current session (0=testday 1-4=practice 5-8=qual 9=warmup 10-13=race)
+        ('mCurrentET', ctypes.c_double),                          # current time
+        ('mEndET', ctypes.c_double),                              # ending time
+        ('mMaxLaps', ctypes.c_int),                               # maximum laps
+        ('mLapDist', ctypes.c_double),                            # distance around track
+        ('pResultsStream', ctypes.c_ubyte*8),                     # results stream additions since last update (newline-delimited and NULL-terminated)
+        ('mNumVehicles', ctypes.c_int),                           # current number of vehicles
+                                                                  # Game phases:
+                                                                  # 0 Before session has begun
+                                                                  # 1 Reconnaissance laps (race only)
+                                                                  # 2 Grid walk-through (race only)
+                                                                  # 3 Formation lap (race only)
+                                                                  # 4 Starting-light countdown has begun (race only)
+                                                                  # 5 Green flag
+                                                                  # 6 Full course yellow / safety car
+                                                                  # 7 Session stopped
+                                                                  # 8 Session over
+        ('mGamePhase', ctypes.c_ubyte),       
+                                                                  # Yellow flag states (applies to full-course only)
+                                                                  # -1 Invalid
+                                                                  #  0 None
+                                                                  #  1 Pending
+                                                                  #  2 Pits closed
+                                                                  #  3 Pit lead lap
+                                                                  #  4 Pits open
+                                                                  #  5 Last lap
+                                                                  #  6 Resume
+                                                                  #  7 Race halt (not currently used)
+        ('mYellowFlagState', ctypes.c_byte),
+        ('mSectorFlag', ctypes.c_byte*3),                         # whether there are any local yellows at the moment in each sector (not sure if sector 0 is first or last, so test)
+        ('mStartLight', ctypes.c_ubyte),                          # start light frame (number depends on track)
+        ('mNumRedLights', ctypes.c_ubyte),                        # number of red lights in start sequence
+        ('mInRealtime', ctypes.c_ubyte),                          # in realtime as opposed to at the monitor
+        ('mPlayerName', ctypes.c_ubyte*32),                       # player name (including possible multiplayer override)
+        ('mPlrFileName', ctypes.c_ubyte*64),                      # may be encoded to be a legal filename
+        ('mDarkCloud', ctypes.c_double),                          # cloud darkness? 0.0-1.0
+        ('mRaining', ctypes.c_double),                            # raining severity 0.0-1.0
+        ('mAmbientTemp', ctypes.c_double),                        # temperature (Celsius)
+        ('mTrackTemp', ctypes.c_double),                          # temperature (Celsius)
+        ('mWind', rF2Vec3),                                       # wind speed
+        ('mMinPathWetness', ctypes.c_double),                     # minimum wetness on main path 0.0-1.0
+        ('mMaxPathWetness', ctypes.c_double),                     # maximum wetness on main path 0.0-1.0
+        ('mExpansion', ctypes.c_ubyte*256),                       # Future use
+        ('pVehicleScoringInfoV01', ctypes.c_ubyte*8),       
     ]
 
 
@@ -208,11 +226,11 @@ class rF2VehicleScoring(ctypes.Structure):
     _pack_ = 4
     _fields_ = [
         ('mID', ctypes.c_int),                                    # slot ID (note that it can be re-used in multiplayer after someone leaves)
-        ('mDriverName', ctypes.c_ubyte*32), # byte                # driver name
-        ('mVehicleName', ctypes.c_ubyte*64), # byte               # vehicle name
+        ('mDriverName', ctypes.c_ubyte*32),                       # driver name
+        ('mVehicleName', ctypes.c_ubyte*64),                      # vehicle name
         ('mTotalLaps', ctypes.c_short),                           # laps completed
-        ('mSector', ctypes.c_byte), # sbyte                       # 0=sector3, 1=sector1, 2=sector2 (don't ask why)
-        ('mFinishStatus', ctypes.c_byte), # sbyte                 # 0=none, 1=finished, 2=dnf, 3=dq
+        ('mSector', ctypes.c_byte),                               # 0=sector3, 1=sector1, 2=sector2 (don't ask why)
+        ('mFinishStatus', ctypes.c_byte),                         # 0=none, 1=finished, 2=dnf, 3=dq
         ('mLapDist', ctypes.c_double),                            # current distance around track
         ('mPathLateral', ctypes.c_double),                        # lateral position with respect to *very approximate* "center" path
         ('mTrackEdge', ctypes.c_double),                          # track edge (w.r.t. "center" path) on same side of track as vehicle
@@ -229,12 +247,12 @@ class rF2VehicleScoring(ctypes.Structure):
 
         ('mNumPitstops', ctypes.c_short),                         # number of pitstops made
         ('mNumPenalties', ctypes.c_short),                        # number of outstanding penalties
-        ('mIsPlayer', ctypes.c_ubyte),  # byte                    # is this the player's vehicle
+        ('mIsPlayer', ctypes.c_ubyte),                            # is this the player's vehicle
 
-        ('mControl', ctypes.c_byte), # sbyte                      # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
-        ('mInPits', ctypes.c_ubyte), # byte                       # between pit entrance and pit exit (not always accurate for remote vehicles)
-        ('mPlace', ctypes.c_ubyte), # byte                        # 1-based position
-        ('mVehicleClass', ctypes.c_ubyte*32), # byte              # vehicle class
+        ('mControl', ctypes.c_byte),                              # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
+        ('mInPits', ctypes.c_ubyte),                              # between pit entrance and pit exit (not always accurate for remote vehicles)
+        ('mPlace', ctypes.c_ubyte),                               # 1-based position
+        ('mVehicleClass', ctypes.c_ubyte*32),                     # vehicle class
 
 
         ('mTimeBehindNext', ctypes.c_double),                     # time behind vehicle in next higher place
@@ -255,24 +273,24 @@ class rF2VehicleScoring(ctypes.Structure):
         ('mLocalRotAccel', rF2Vec3),                              # rotational acceleration (radians/sec^2) in local vehicle coordinates
 
         # tag.2012.03.01 - stopped casting some of these so variables now have names and mExpansion has shrunk, overall size and old data locations should be same
-        ('mHeadlights', ctypes.c_ubyte), # byte                   # status of headlights
-        ('mPitState', ctypes.c_ubyte), # byte                     # 0=none, 1=request, 2=entering, 3=stopped, 4=exiting
-        ('mServerScored', ctypes.c_ubyte), # byte                 # whether this vehicle is being scored by server (could be off in qualifying or racing heats)
-        ('mIndividualPhase', ctypes.c_ubyte), # byte              # game phases (described below) plus 9=after formation, 10=under yellow, 11=under blue (not used)
+        ('mHeadlights', ctypes.c_ubyte),                          # status of headlights
+        ('mPitState', ctypes.c_ubyte),                            # 0=none, 1=request, 2=entering, 3=stopped, 4=exiting
+        ('mServerScored', ctypes.c_ubyte),                        # whether this vehicle is being scored by server (could be off in qualifying or racing heats)
+        ('mIndividualPhase', ctypes.c_ubyte),                     # game phases (described below) plus 9=after formation, 10=under yellow, 11=under blue (not used)
 
         ('mQualification', ctypes.c_int),                         # 1-based, can be -1 when invalid
 
         ('mTimeIntoLap', ctypes.c_double),                        # estimated time into lap
         ('mEstimatedLapTime', ctypes.c_double),                   # estimated laptime used for 'time behind' and 'time into lap' (note: this may changed based on vehicle and setup!?)
-        ('mPitGroup', ctypes.c_ubyte*24),  # byte
+        ('mPitGroup', ctypes.c_ubyte*24),        
                                                                   # pit group (same as team name unless pit is shared)
-        ('mFlag', ctypes.c_ubyte),  # byte                        # primary flag being shown to vehicle (currently only 0=green or 6=blue)
-        ('mUnderYellow', ctypes.c_ubyte),  # byte                 # whether this car has taken a full-course caution flag at the start/finish line
-        ('mCountLapFlag', ctypes.c_ubyte),  # byte                # 0 = do not count lap or time, 1 = count lap but not time, 2 = count lap and time
-        ('mInGarageStall', ctypes.c_ubyte),  # byte               # appears to be within the correct garage stall
+        ('mFlag', ctypes.c_ubyte),                                # primary flag being shown to vehicle (currently only 0=green or 6=blue)
+        ('mUnderYellow', ctypes.c_ubyte),                         # whether this car has taken a full-course caution flag at the start/finish line
+        ('mCountLapFlag', ctypes.c_ubyte),                        # 0 = do not count lap or time, 1 = count lap but not time, 2 = count lap and time
+        ('mInGarageStall', ctypes.c_ubyte),                       # appears to be within the correct garage stall
 
-        ('mUpgradePack', ctypes.c_ubyte*16),  # byte              # Coded upgrades
-        ('mExpansion', ctypes.c_ubyte*60),  # byte
+        ('mUpgradePack', ctypes.c_ubyte*16),                      # Coded upgrades
+        ('mExpansion', ctypes.c_ubyte*60),        
     ]
 
 
@@ -289,34 +307,34 @@ class rF2Scoring(ctypes.Structure):
 class rF2PhysicsOptions(ctypes.Structure):
     _pack_ = 4
     _fields_ = [
-        ('mTractionControl', ctypes.c_ubyte),
-        ('mAntiLockBrakes', ctypes.c_ubyte),
-        ('mStabilityControl', ctypes.c_ubyte),
-        ('mAutoShift', ctypes.c_ubyte),
-        ('mAutoClutch', ctypes.c_ubyte),
-        ('mInvulnerable', ctypes.c_ubyte),
-        ('mOppositeLock', ctypes.c_ubyte),
-        ('mSteeringHelp', ctypes.c_ubyte),
-        ('mBrakingHelp', ctypes.c_ubyte),
-        ('mSpinRecovery', ctypes.c_ubyte),
-        ('mAutoPit', ctypes.c_ubyte),
-        ('mAutoLift', ctypes.c_ubyte),
-        ('mAutoBlip', ctypes.c_ubyte),
-        ('mFuelMult', ctypes.c_ubyte),
-        ('mTireMult', ctypes.c_ubyte),
-        ('mMechFail', ctypes.c_ubyte),
-        ('mAllowPitcrewPush', ctypes.c_ubyte),
-        ('mRepeatShifts', ctypes.c_ubyte),
-        ('mHoldClutch', ctypes.c_ubyte),
-        ('mAutoReverse', ctypes.c_ubyte),
-        ('mAlternateNeutral', ctypes.c_ubyte),
-        ('mAIControl', ctypes.c_ubyte),
+        ('mTractionControl', ctypes.c_ubyte),                     # 0 (off) - 3 (high)
+        ('mAntiLockBrakes', ctypes.c_ubyte),                      # 0 (off) - 2 (high)
+        ('mStabilityControl', ctypes.c_ubyte),                    # 0 (off) - 2 (high)
+        ('mAutoShift', ctypes.c_ubyte),                           # 0 (off), 1 (upshifts), 2 (downshifts), 3 (all)
+        ('mAutoClutch', ctypes.c_ubyte),                          # 0 (off), 1 (on)
+        ('mInvulnerable', ctypes.c_ubyte),                        # 0 (off), 1 (on)
+        ('mOppositeLock', ctypes.c_ubyte),                        # 0 (off), 1 (on)
+        ('mSteeringHelp', ctypes.c_ubyte),                        # 0 (off) - 3 (high)
+        ('mBrakingHelp', ctypes.c_ubyte),                         # 0 (off) - 2 (high)
+        ('mSpinRecovery', ctypes.c_ubyte),                        # 0 (off), 1 (on)
+        ('mAutoPit', ctypes.c_ubyte),                             # 0 (off), 1 (on)
+        ('mAutoLift', ctypes.c_ubyte),                            # 0 (off), 1 (on)
+        ('mAutoBlip', ctypes.c_ubyte),                            # 0 (off), 1 (on)
+        ('mFuelMult', ctypes.c_ubyte),                            # fuel multiplier (0x-7x)
+        ('mTireMult', ctypes.c_ubyte),                            # tire wear multiplier (0x-7x)
+        ('mMechFail', ctypes.c_ubyte),                            # mechanical failure setting; 0 (off), 1 (normal), 2 (timescaled)
+        ('mAllowPitcrewPush', ctypes.c_ubyte),                    # 0 (off), 1 (on)
+        ('mRepeatShifts', ctypes.c_ubyte),                        # accidental repeat shift prevention (0-5; see PLR file)
+        ('mHoldClutch', ctypes.c_ubyte),                          # for auto-shifters at start of race: 0 (off), 1 (on)
+        ('mAutoReverse', ctypes.c_ubyte),                         # Whether shifting up and down simultaneously equals neutral
+        ('mAlternateNeutral', ctypes.c_ubyte),                    # 0 (off), 1 (on)
+        ('mAIControl', ctypes.c_ubyte),                           # Whether player vehicle is currently under AI control
         ('mUnused1', ctypes.c_ubyte),
         ('mUnused2', ctypes.c_ubyte),
-        ('mManualShiftOverrideTime', ctypes.c_float),
-        ('mAutoShiftOverrideTime', ctypes.c_float),
-        ('mSpeedSensitiveSteering', ctypes.c_float),
-        ('mSteerRatioSpeed', ctypes.c_float),
+        ('mManualShiftOverrideTime', ctypes.c_float),             # time before auto-shifting can resume after recent manual shift
+        ('mAutoShiftOverrideTime', ctypes.c_float),               # time before manual shifting can resume after recent auto shift
+        ('mSpeedSensitiveSteering', ctypes.c_float),              # 0.0 (off) - 1.0
+        ('mSteerRatioSpeed', ctypes.c_float),                     # speed (m/s) under which lock gets expanded to full
     ]
 
 class rF2TrackedDamage(ctypes.Structure):
@@ -361,10 +379,10 @@ class rF2Extended(ctypes.Structure):
         ('is64bit', ctypes.c_ubyte),
         ('mPhysics', rF2PhysicsOptions),
         ('mTrackedDamages', rF2TrackedDamage*MAX_MAPPED_IDS),
-        ('mInRealtimeFC', ctypes.c_ubyte),
+        ('mInRealtimeFC', ctypes.c_ubyte),                        # 1: on track
         ('mMultimediaThreadStarted', ctypes.c_ubyte),
         ('mSimulationThreadStarted', ctypes.c_ubyte),
-        ('mSessionStarted', ctypes.c_ubyte),
+        ('mSessionStarted', ctypes.c_ubyte),                      # 1: track loaded
         ('mTicksSessionStarted', ctypes.c_longlong),
         ('mTicksSessionEnded', ctypes.c_longlong),
         ('mSessionTransitionCapture',rF2SessionTransitionCapture ),
@@ -384,7 +402,38 @@ class SimInfo:
         self._rf2_ext = mmap.mmap(0, ctypes.sizeof(rF2Extended), "$rFactor2SMMP_Extended$")
         self.Rf2Ext = rF2Extended.from_buffer(self._rf2_ext)
 
+    def isRF2running(self):
+        """
+        True: rF2 is running and the memory map is loaded
+        """
+        version = Cbytestring2Python(self.Rf2Ext.mVersion)
+        # 2019/04/23:  3.5.0.9
+        return version != ''
+
+    def isTrackLoaded(self):
+        """
+        True: rF2 is running and the track is loaded
+        """
+        started = self.Rf2Ext.mSessionStarted
+        return started != 0
+
+    def isOnTrack(self):
+        """
+        True: rF2 is running and the player is on track
+        """
+        realtime = self.Rf2Ext.mInRealtimeFC
+        ret = realtime != 0
+        return realtime != 0
+
+    def isAiDriving(self):
+        """
+        True: rF2 is running and the player is on track
+        """
+        return self.Rf2Scor.mVehicles[0].mControl == 1  # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
+        # didn't work self.Rf2Ext.mPhysics.mAIControl
+
     def close(self):
+      # This didn't help with the errors
       try:
         self._rf2_tele.close()
         self._rf2_scor.close()
@@ -395,6 +444,15 @@ class SimInfo:
     def __del__(self):
         self.close()
 
+def Cbytestring2Python(bytestring):
+    """
+    length is size of bytestring buffer
+    version = ''.join(chr(i) for i in bytestring[0:length]).rstrip('\0')
+    version2 = bytes(bytestring[0:length]).partition(b'\0')[0]
+    version3 = bytes(bytestring[0:length]).decode()
+    """
+    return bytes(bytestring).partition(b'\0')[0].decode().rstrip()
+
 if __name__ == '__main__':
     # Example usage
     info = SimInfo()
@@ -403,7 +461,37 @@ if __name__ == '__main__':
     gear   = info.Rf2Tele.mVehicles[0].mGear  # -1 to 6
     info.Rf2Tele.mVehicles[0].mGear = 2
     gear   = info.Rf2Tele.mVehicles[0].mGear  # -1 to 6
-    #TBD driver = info.Rf2Scor.mVehicles[0].mDriverName
-    driver = 'Max Snell'
+
+    driver = Cbytestring2Python(info.Rf2Scor.mVehicles[0].mDriverName)
     print('%s Gear: %d, Clutch position: %d' % (driver, gear, clutch))
 
+    vehicleName = Cbytestring2Python(info.Rf2Scor.mVehicles[0].mVehicleName)
+    trackName = Cbytestring2Python(info.Rf2Scor.mScoringInfo.mTrackName)
+    vehicleClass = Cbytestring2Python(info.Rf2Scor.mVehicles[0].mVehicleClass)
+    
+    started = info.Rf2Ext.mSessionStarted
+    realtime = info.Rf2Ext.mInRealtimeFC
+    ai = info.isAiDriving()
+
+    version = Cbytestring2Python(info.Rf2Ext.mVersion)
+    # 2019/04/23:  3.5.0.9
+
+    if info.isRF2running():
+      print('Memory map is loaded')
+    else:
+      print('Memory map is not loaded')
+
+    if info.isTrackLoaded():
+      trackName = Cbytestring2Python(info.Rf2Scor.mScoringInfo.mTrackName)
+      print('%s is loaded' % trackName)
+    else:
+      print('Track is not loaded')
+
+    if info.isOnTrack():
+      driver = Cbytestring2Python(info.Rf2Scor.mVehicles[0].mDriverName)
+      print('Driver "%s" is on track' % driver)
+    else:
+      print('Driver is not on track')
+
+
+    pass

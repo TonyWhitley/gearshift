@@ -6,7 +6,7 @@
 from scheduler import MyThread
 from ctypes import addressof, c_char_p
 
-from Mmap_for_DSPS_V22 import SimInfo
+from Mmap_for_DSPS_V22 import SimInfo, Cbytestring2Python
 from mockMemoryMap import gui
 
 tick_interval = 0.1 # seconds
@@ -21,6 +21,7 @@ class Controls:
     else:
       self.clutchState = self.__readClutch()
       self.currentGear = self.__readGear()
+
   def __readClutch(self):
     if self.debug > 5:
       return 100 # clutch is not pressed
@@ -38,9 +39,7 @@ class Controls:
       self.currentGear   = self.__readGear()
       if self.debug > 0:
         print('[MemoryMapped] gear: %s' % self.currentGear)
-      driver = str(c_char_p(addressof(self.info.Rf2Scor.mVehicles[0].mDriverName)).value)
-      # still not right, gives "b'svensmiles '"
-      #self.info.Rf2Scor.mVehicles[0].mDriverName.value
+      driver = Cbytestring2Python(self.info.Rf2Scor.mVehicles[0].mDriverName)
       if self.getDriverType() == 0:
         self.callback(gearEvent=self.currentGear)
 

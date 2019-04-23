@@ -21,16 +21,14 @@ import sys
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 36 # The git commit count
-versionStr = 'gearshift V2.1.%d' % BUILD_REVISION
-versionDate = '2019-04-22'
+BUILD_REVISION = 37 # The git commit count
+versionStr = 'gearshift V2.2.%d' % BUILD_REVISION
+versionDate = '2019-04-23'
 
-print(versionStr, versionDate)
-print('https://github.com/TonyWhitley/gearshift\n\n'
- "Reads the clutch and shifter from rF2 using k3nny's Python\n"
- "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n"
- "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n"
- "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n")
+credits = "Reads the clutch and shifter from rF2 using k3nny's Python\n" \
+ "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
+ "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n" \
+ "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n"
 
 # Translated from gearshift.ahk V1.5 tjw 2017-12-28
 
@@ -145,6 +143,8 @@ class graunch:
         if debug >= 1:
             directInputKeySend.PressReleaseKey('DIK_G')
 
+  def isGraunching(self):
+    return self.graunching
 
 
 ######################################################################
@@ -355,7 +355,11 @@ def memoryMapCallback(clutchEvent=None, gearEvent=None):
 def ShowButtons():
   pass
 
+global neutralButtonKeycode
+
 if __name__ == "__main__":
+  #global neutralButtonKeycode
+
   config_o = Config()
   debug = config_o.get('miscellaneous', 'debug')
   if not debug: debug = 0
@@ -363,15 +367,6 @@ if __name__ == "__main__":
   graunchWav = config_o.get('miscellaneous', 'wav file')
   mockInput = config_o.get('miscellaneous', 'mock input')
   reshift = config_o.get('miscellaneous', 'reshift') == 1
-  Shifter1 = config_o.get('shifter', '1st gear')
-  Shifter2 = config_o.get('shifter', '2nd gear')
-  Shifter3 = config_o.get('shifter', '3rd gear')
-  Shifter4 = config_o.get('shifter', '4th gear')
-  Shifter5 = config_o.get('shifter', '5th gear')
-  Shifter6 = config_o.get('shifter', '6th gear')
-  Shifter7 = config_o.get('shifter', '7th gear')
-  Shifter8 = config_o.get('shifter', '8th gear')
-  ShifterR = config_o.get('shifter', 'reverse')
 
   ClutchEngaged = config_o.get('clutch', 'bite point')
   ReverseClutchAxis = config_o.get('clutch', 'reversed')
@@ -379,7 +374,7 @@ if __name__ == "__main__":
   neutralButton = config_o.get('miscellaneous', 'neutral button')
   ignitionButton = config_o.get('miscellaneous', 'ignition button')
   if neutralButton in DirectInputKeyCodeTable: # (it must be)
-    _neutralButton = neutralButton[4:]
+    neutralButtonKeycode = neutralButton[4:]
   else:
     print('\ngearshift.ini "neutral button" entry "%s" not recognised.\nIt must be one of:' % neutralButton)
     for _keyCode in DirectInputKeyCodeTable:
@@ -393,12 +388,28 @@ if __name__ == "__main__":
       print(_keyCode, end=', ')
     quit(99)
 
-  print('\nIf gear selection fails %s will be sent to\nthe active window until you reselect a gear.' % 
-        _neutralButton)
-  print('\nYou can minimise this window now.\nDo not close it until you have finished racing.')
+  instructions = 'If gear selection fails this program will send %s ' \
+    'to the active window until you reselect a gear.\n\n' \
+    'You can minimise this window now.\n' \
+    'Do not close it until you have finished racing.' % neutralButtonKeycode
+
   graunch_o = graunch()
 
+#############################################################
   if sharedMemory == 0:
+    print(versionStr, versionDate)
+    Shifter1 = config_o.get('shifter', '1st gear')
+    Shifter2 = config_o.get('shifter', '2nd gear')
+    Shifter3 = config_o.get('shifter', '3rd gear')
+    Shifter4 = config_o.get('shifter', '4th gear')
+    Shifter5 = config_o.get('shifter', '5th gear')
+    Shifter6 = config_o.get('shifter', '6th gear')
+    Shifter7 = config_o.get('shifter', '7th gear')
+    Shifter8 = config_o.get('shifter', '8th gear')
+    ShifterR = config_o.get('shifter', 'reverse')
+
+    print(instructions)
+
     from wheel import Controller
 
     shifterController_o = Controller()
@@ -432,11 +443,14 @@ if __name__ == "__main__":
     else:
         SetTimer(ShowButtons, 100)
 
+#############################################################
   else: # Using shared memory, reading clutch state and gear selected direct from rF2
     controls_o = Controls(debug=debug)
     controls_o.run(memoryMapCallback)
-    if mockInput:
-      # Testing using the simple GUI to poke inputs into the memory map
-      gui()
-      controls_o.stop()
-      pass
+    # Testing using the simple GUI to poke inputs into the memory map
+    gui(mocking=mockInput,instructions=instructions,graunch_o=graunch_o)
+    controls_o.stop()
+    pass
+#############################################################
+
+

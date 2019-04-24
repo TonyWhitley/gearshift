@@ -434,36 +434,6 @@ class SimInfo:
         return self.Rf2Scor.mVehicles[0].mControl == 1  # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
         # didn't work self.Rf2Ext.mPhysics.mAIControl
 
-    """
-    def getPlayers(self, variableName):
-      # Get the variable for the player's vehicle
-      __player = self.Rf2Tele.mVehicles[0]
-      variables = {
-        'ClutchRPM':          __player.mClutchRPM,
-        'EngineMaxRPM':       __player.mEngineMaxRPM,
-        'EngineRPM':          __player.mEngineRPM,
-        'Gear':               __player.mGear,
-        'UnfilteredClutch':   __player.mUnfilteredClutch
-        }
-      try:
-        return variables[variableName]
-      except NameError:
-        return -99
-      else:
-        return 0
-
-    def setPlayers(self, variableName, value):
-      # Set the variable for the player's vehicle
-      __player = self.Rf2Tele.mVehicles[0]
-      if   variableName == 'ClutchRPM':          __player.mClutchRPM=value
-      elif variableName == 'EngineMaxRPM':       __player.mEngineMaxRPM=value
-      elif variableName == 'EngineRPM':          __player.mEngineRPM=value
-      elif variableName == 'Gear':               __player.mGear=value
-      elif variableName == 'UnfilteredClutch':   __player.mUnfilteredClutch=value
-      else:
-       raise NameError
-    """
-
     def playersVehicleTelemetry(self):
       # Get the variable for the player's vehicle
       return self.Rf2Tele.mVehicles[0]

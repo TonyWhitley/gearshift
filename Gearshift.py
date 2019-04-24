@@ -21,7 +21,7 @@ import sys
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 42 # The git commit count
+BUILD_REVISION = 43 # The git commit count
 versionStr = 'gearshift V2.2.%d' % BUILD_REVISION
 versionDate = '2019-04-24'
 
@@ -453,8 +453,9 @@ if __name__ == "__main__":
   else: # Using shared memory, reading clutch state and gear selected direct from rF2
     controls_o = Controls(debug=debug)
     controls_o.run(memoryMapCallback)
-    # Testing using the simple GUI to poke inputs into the memory map
-    gui(mocking=mockInput,instructions=instructions,graunch_o=graunch_o)
+    # mockInput: testing using the simple GUI to poke inputs into the memory map
+    # otherwise just use the GUI slightly differently
+    gui(mocking=mockInput,instructions=instructions,graunch_o=graunch_o,controls_o=controls_o)
     controls_o.stop()
     pass
 #############################################################

@@ -206,10 +206,13 @@ class mock(Gui):
 ####################################################
 class live(Gui):
   # Subclass for GUI items for Live.
-  def __init__(self, parentFrame, graunch_o, maxRevs=10000, maxFwdGears=6, instructions=''):
+  def __init__(self, parentFrame, graunch_o, controls_o, maxRevs=10000, maxFwdGears=6, instructions=''):
     Gui.__init__(self, parentFrame, maxRevs, maxFwdGears)
     self._timestamp = 0
     self.graunch_o = graunch_o
+    self.controls_o = controls_o
+
+    self._createBoolVar('SMactive', False)
     self._createBoolVar('Graunching', False)
     self._createVar('Clutch', 0)
 
@@ -233,10 +236,15 @@ class live(Gui):
                                   variable=self.vars['Clutch'])
     tkScale_Clutch.grid(column=2, row=1, sticky='wns')
 
+    self._tkCheckbuttons['SMactive'] = tk.Checkbutton(tkFrame_Instructions, 
+                                                  text='SM active',
+                                                  variable=self.vars['SMactive'])
+    self._tkCheckbuttons['SMactive'].grid(column=1, row=2, sticky='sw', padx=self.xPadding)
+
     self._tkCheckbuttons['Graunching'] = tk.Checkbutton(tkFrame_Instructions, 
                                                   text='Graunching',
                                                   variable=self.vars['Graunching'])
-    self._tkCheckbuttons['Graunching'].grid(column=1, row=2, sticky='sw', padx=self.xPadding)
+    self._tkCheckbuttons['Graunching'].grid(column=2, row=2, sticky='sw', padx=self.xPadding)
   
     # Kick off the tick
     self.__tick()
@@ -256,16 +264,17 @@ class live(Gui):
     self.vars['Track loaded'].set(self.info.isTrackLoaded())
     self.vars['On track'].set(self.info.isOnTrack())
     #self.vars['Escape pressed'].set(not self._timestamp < self.info.playersVehicleScoring().mTimeIntoLap)
-    if self._timestamp < self.info.playersVehicleScoring().mTimeIntoLap:
+    if not self.info.isOnTrack() or \
+      self._timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
       self.vars['Escape pressed'].set(False)
     else:
       self.vars['Escape pressed'].set(True)
-    self._timestamp = self.info.playersVehicleScoring().mTimeIntoLap
+    self._timestamp = self.info.playersVehicleTelemetry().mElapsedTime
 
     self.vars['AI driving'].set(self.info.isOnTrack() and \
       self.info.isAiDriving())
     self.vars['Graunching'].set(self.graunch_o.isGraunching())
-    
+    self.vars['SMactive'].set(self.controls_o.SMactive())
     self.parentFrame.after(200, self.__tick)
 
   def _gearChange(self):
@@ -296,7 +305,7 @@ def credits():
             credits
         )
 
-def gui(maxRevs=10000, maxFwdGears=6, mocking=False, instructions='', graunch_o=None):
+def gui(maxRevs=10000, maxFwdGears=6, mocking=False, instructions='', graunch_o=None, controls_o=None):
   root = tk.Tk()
   root.title('gearshift')
   menubar = tk.Menu(root)
@@ -308,9 +317,14 @@ def gui(maxRevs=10000, maxFwdGears=6, mocking=False, instructions='', graunch_o=
     
   if mocking:
     o_gui = mock(mockMemoryMap,maxRevs,maxFwdGears)
-    #o_gui.mock()
   else:
-    o_gui = live(mockMemoryMap,graunch_o,maxRevs,maxFwdGears,instructions=instructions)
+    o_gui = live(mockMemoryMap,
+                 graunch_o,                 # to read Graunch status
+                 controls_o,                # to read whether state machine is active
+                 maxRevs,
+                 maxFwdGears,
+                 instructions=instructions  # Text
+                 )
 
   # Trying for a clean shutdown 
   # root.protocol("WM_DELETE_WINDOW", o_gui.on_closing)

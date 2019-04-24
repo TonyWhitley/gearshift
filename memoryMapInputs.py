@@ -4,12 +4,12 @@
 # https://forum.studio-397.com/index.php?members/k3nny.35143/
 
 from scheduler import MyThread
-from ctypes import addressof, c_char_p
 
 from Mmap_for_DSPS_V22 import SimInfo, Cbytestring2Python
 from mockMemoryMap import gui
 
 tick_interval = 0.1 # seconds
+_timestamp = 0
 
 class Controls:
   def __init__(self, debug=0):
@@ -25,42 +25,54 @@ class Controls:
   def __readClutch(self):
     if self.debug > 5:
       return 100 # clutch is not pressed
-    _c = self.info.Rf2Tele.mVehicles[0].mUnfilteredClutch # 1.0 clutch down, 0 clutch up
+    _c = self.info.playersVehicleTelemetry().mUnfilteredClutch # 1.0 clutch down, 0 clutch up
     # We want 100 clutch released, 0 clutch pressed
     return int(-(_c-1)*100)
   def __readGear(self):
     if self.debug > 5:
       return 1  # trying to get first
-    return self.info.Rf2Tele.mVehicles[0].mGear  # -1 to number of gears, 0 is neutral
+    return self.info.playersVehicleTelemetry().mGear  # -1 to number of gears, 0 is neutral
 
   def monitor(self):
     # Run every tick_interval
-    if self.currentGear != self.__readGear():
-      self.currentGear   = self.__readGear()
-      if self.debug > 0:
-        print('[MemoryMapped] gear: %s' % self.currentGear)
-      driver = Cbytestring2Python(self.info.Rf2Scor.mVehicles[0].mDriverName)
-      if self.getDriverType() == 0:
-        self.callback(gearEvent=self.currentGear)
+    global _timestamp
+    if self.getDriverType() != 0:
+      self.callback(stopEvent=True) # AI is in control
+    elif 1: # this WILL not work    _timestamp < self.info.playersVehicleScoring().mTimeIntoLap:
+      # Time stops when Esc pressed
+      if  self.info.isRF2running() and \
+          self.info.isTrackLoaded() and \
+          self.info.isOnTrack():
+        if self.currentGear != self.__readGear():
+          self.currentGear   = self.__readGear()
+          if self.debug > 0:
+            print('[MemoryMapped] gear: %s' % self.currentGear)
+          #driver = Cbytestring2Python(self.playersVehicleScoring().mDriverName)
+          self.callback(gearEvent=self.currentGear)
 
-    if self.clutchState != self.__readClutch():
-      self.clutchState   = self.__readClutch()
-      if self.getDriverType() == 0:
-        self.callback(clutchEvent=self.clutchState)
+        if self.clutchState != self.__readClutch():
+          self.clutchState   = self.__readClutch()
+          if self.getDriverType() == 0:
+            self.callback(clutchEvent=self.clutchState)
 
-    mEngineRPM = int(self.info.Rf2Tele.mVehicles[0].mEngineRPM)
-    mClutchRPM = int(self.info.Rf2Tele.mVehicles[0].mClutchRPM)
+        # debug print when clutch RPM > engine RPM (when slamming down a gear)
+        mEngineRPM = int(self.info.playersVehicleTelemetry().mEngineRPM)
+        mClutchRPM = int(self.info.playersVehicleTelemetry().mClutchRPM)
 
-    if self.info.Rf2Tele.mVehicles[0].mUnfilteredClutch < .9: # 1.0 clutch down, 0 clutch up
-      if mClutchRPM > mEngineRPM:
-        #print(mClutchRPM, mEngineRPM)
-        pass
+        if self.info.playersVehicleTelemetry().mUnfilteredClutch < .9: # 1.0 clutch down, 0 clutch up
+          if mClutchRPM > mEngineRPM:
+            #print(mClutchRPM, mEngineRPM)
+            pass
+    else: # Esc pressed
+      self.callback(stopEvent=True)
+
+    _timestamp = self.info.playersVehicleScoring().mTimeIntoLap
 
   def getMaxRevs(self):
-    return self.info.Rf2Tele.mVehicles[0].mEngineMaxRPM
+    return self.info.playersVehicleTelemetry().mEngineMaxRPM
 
   def getDriverType(self):
-    return self.info.Rf2Scor.mVehicles[0].mControl  # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
+    return self.info.playersVehicleScoring().mControl  # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
 
   def run(self, callback):
     """ Event loop """

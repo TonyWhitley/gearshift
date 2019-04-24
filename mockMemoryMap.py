@@ -14,93 +14,67 @@ GEAR_DELAY = 200.0 / 1000.0   # 100 mS
 TICKOVER = 1000
 
 class Gui:
-  def __init__(self, parentFrame, maxRevs, maxFwdGears=6, mocking=False, instructions='', graunch_o=None):
+  """
+  Superclass for GUI items common to Mock and Live.
+  """
+  def __init__(self, parentFrame, maxRevs, maxFwdGears=6):
     """ Put this into the parent frame """
     self.parentFrame = parentFrame
-    self.mocking = mocking
-    self.graunch_o = graunch_o
     self.info = SimInfo()
-    clutch = self.info.Rf2Tele.mVehicles[0].mUnfilteredClutch # 1.0 clutch down, 0 clutch up
-    gear  = self.info.Rf2Tele.mVehicles[0].mGear  # -1 to 6
+    #clutch = self.info.playersVehicleTelemetry().mUnfilteredClutch') # 1.0 clutch down, 0 clutch up
+    #gear  = self.info.playersVehicleTelemetry().mGear')  # -1 to 6
 
     self.settings = {}
     self.vars = {}
-    _tkCheckbuttons = {}
+    self._tkCheckbuttons = {}
     _tkRadiobuttons = {}
 
-    xPadding = 10
+    self.xPadding = 10
 
     ####################################################
     # Status frame
     tkFrame_Status = tk.LabelFrame(parentFrame, text='rFactor 2 status')
-    tkFrame_Status.grid(column=2, row=1, sticky='e', padx=xPadding)
+    tkFrame_Status.grid(column=2, row=1, sticky='nsew', padx=self.xPadding)
 
     self._createBoolVar('rF2 running', False)
-    _tkCheckbuttons['rF2 running'] = tk.Checkbutton(tkFrame_Status, 
+    self._tkCheckbuttons['rF2 running'] = tk.Checkbutton(tkFrame_Status, 
                                                   text='rF2 running and\nshared memory\nworking',
                                                   justify='l',
                                                   #indicatoron=0,
                                                   variable=self.vars['rF2 running'])
-    _tkCheckbuttons['rF2 running'].grid(sticky='w')
+    self._tkCheckbuttons['rF2 running'].grid(sticky='w')
 
     self._createBoolVar('Track loaded', False)
-    _tkCheckbuttons['Track loaded'] = tk.Checkbutton(tkFrame_Status, 
+    self._tkCheckbuttons['Track loaded'] = tk.Checkbutton(tkFrame_Status, 
                                                   text='Track loaded',
                                                   variable=self.vars['Track loaded'])
-    _tkCheckbuttons['Track loaded'].grid(sticky='w')
+    self._tkCheckbuttons['Track loaded'].grid(sticky='w')
 
     self._createBoolVar('On track', False)
-    _tkCheckbuttons['On track'] = tk.Checkbutton(tkFrame_Status, 
+    self._tkCheckbuttons['On track'] = tk.Checkbutton(tkFrame_Status, 
                                                   text='On track',
                                                   variable=self.vars['On track'])
-    _tkCheckbuttons['On track'].grid(sticky='w')
+    self._tkCheckbuttons['On track'].grid(sticky='w')
+
+    self._createBoolVar('Escape pressed', False)
+    self._tkCheckbuttons['Escape pressed'] = tk.Checkbutton(tkFrame_Status, 
+                                                  text='Escape pressed',
+                                                  variable=self.vars['Escape pressed'])
+    self._tkCheckbuttons['Escape pressed'].grid(sticky='w')
 
     self._createBoolVar('AI driving', False)
-    _tkCheckbuttons['AI driving'] = tk.Checkbutton(tkFrame_Status, 
+    self._tkCheckbuttons['AI driving'] = tk.Checkbutton(tkFrame_Status, 
                                                   text='AI driving',
                                                   variable=self.vars['AI driving'])
-    _tkCheckbuttons['AI driving'].grid(sticky='w')
+    self._tkCheckbuttons['AI driving'].grid(sticky='w')
 
     ####################################################
     self._createBoolVar('Clutch pressed', False)
     self._createBoolVar('Auto clutch', True)
-    self._createBoolVar('Graunching', False)
-    if mocking:
-      tkLabel_Options = tk.Label(parentFrame, 
-                                  text='Simple GUI to fake clutch, gear selection and revs\n'
-                                  '"Auto clutch" presses and releases the clutch')
-      tkLabel_Options.grid(column=1, row=0, columnspan=3)
-
-      tkFrame_Clutch = tk.LabelFrame(parentFrame, text='Clutch')
-      tkFrame_Clutch.grid(column=1, row=1, sticky='ew', padx=xPadding)
-
-      _tkCheckbuttons['Clutch pressed'] = tk.Checkbutton(tkFrame_Clutch, 
-                                                   text='Pressed',
-                                                   variable=self.vars['Clutch pressed'],
-                                                   command=self.clutchOperation)
-
-      _tkCheckbuttons['Clutch pressed'].grid(sticky='w')
-
-      _tkCheckbuttons['Auto clutch'] = tk.Checkbutton(tkFrame_Clutch, 
-                                                   text='Automatic',
-                                                   variable=self.vars['Auto clutch'])
-
-      _tkCheckbuttons['Auto clutch'].grid(sticky='w')
-    else:  # Live, not mocking
-      tkLabel_instructions = tk.Label(parentFrame, 
-                                      justify='l',
-                                      wraplength=200,
-                                      text=instructions)
-      tkLabel_instructions.grid(column=1, row=1, sticky='ew', padx=xPadding)
-
-      _tkCheckbuttons['Graunching'] = tk.Checkbutton(parentFrame, 
-                                                   text='Graunching',
-                                                   variable=self.vars['Graunching'])
-      _tkCheckbuttons['Graunching'].grid(column=1, row=2, sticky='w', padx=xPadding)
 
     ####################################################
-    tkFrame_Gear = tk.LabelFrame(parentFrame, text='Gear', padx=xPadding)
-    tkFrame_Gear.grid(column=1, row=3, sticky='ew')
+    tkFrame_Gear = tk.LabelFrame(parentFrame, text='Gear', padx=self.xPadding)
+    tkFrame_Gear.grid(column=1, row=3, sticky='nsew')
 
     self._createVar('Gear', 'Neutral')
     _gears = GEARS[:maxFwdGears+2]
@@ -109,13 +83,13 @@ class Gui:
                                                   text=gear, 
                                                   variable=self.vars['Gear'], 
                                                   value=gear,
-                                                  command=self.gearChange)
+                                                  command=self._gearChange)
       _tkRadiobuttons[gear].grid(sticky='w')
       _tkRadiobuttons[gear].update()
 
     ####################################################
     tkFrame_Revs = tk.LabelFrame(parentFrame, text='Revs')
-    tkFrame_Revs.grid(column=2, row=1, rowspan=3, sticky='sew', padx=xPadding)
+    tkFrame_Revs.grid(column=2, row=1, rowspan=3, sticky='sew', padx=self.xPadding)
 
     _EngineRPMCol = 1
     self._createVar('EngineRPM', TICKOVER)
@@ -160,9 +134,6 @@ class Gui:
     tkLabel_ClutchRPM_0 = tk.Label(tkFrame_Revs, text='Downshift\nover rev')
     tkLabel_ClutchRPM_0.grid(column=_ClutchRPMCol, row=4, sticky='nw')
 
-    # Kick off the tick
-    self.tick()
-  
   def _createVar(self, name, value):
     self.vars[name] = tk.StringVar(name=name)
     self.vars[name].set(value)
@@ -171,53 +142,11 @@ class Gui:
     self.vars[name] = tk.BooleanVar(name=name)
     self.vars[name].set(value)
 
-  ####################################### Commands
-  def _operateClutch(self, pressed):
-    if pressed:
-      self.info.Rf2Tele.mVehicles[0].mUnfilteredClutch = 1.0 # 1.0 clutch down, 0 clutch up
-      sleep(CLUTCH_DELAY)
-      print('[Mock: Clutch pressed]')
-    else:
-      self.info.Rf2Tele.mVehicles[0].mUnfilteredClutch = 0.0 # 1.0 clutch down, 0 clutch up
-      sleep(CLUTCH_DELAY)
-      print('[Mock: Clutch released]')
-  def clutchOperation(self):
-    self._operateClutch(self.vars['Clutch pressed'].get())
-
-  def gearChange(self):
-    if self.mocking:
-      if self.vars['Auto clutch'].get():
-        self._operateClutch(True)
-      print('[Mock: gear %s]' % self.vars['Gear'].get())
-      self.info.Rf2Tele.mVehicles[0].mGear = GEARS.index(self.vars['Gear'].get())-1 
-      # -1=reverse, 0=neutral, 1+=forward gears
-      sleep(GEAR_DELAY)
-      if self.vars['Auto clutch'].get():
-        self._operateClutch(False)
-
   def EngineRPM(self, event):
-    self.info.Rf2Tele.mVehicles[0].mEngineRPM = int(self.vars['EngineRPM'].get())
+    self.info.playersVehicleTelemetry().mEngineRPM = int(self.vars['EngineRPM'].get())
 
   def ClutchRPM(self, event):
-    self.info.Rf2Tele.mVehicles[0].mClutchRPM = int(self.vars['ClutchRPM'].get())
-
-  ####################################### timed callback
-
-  def tick(self):
-    mEngineRPM = int(self.info.Rf2Tele.mVehicles[0].mEngineRPM)
-    mClutchRPM = int(self.info.Rf2Tele.mVehicles[0].mClutchRPM)
-    self.vars['EngineRPM'].set(mEngineRPM)
-    self.vars['ClutchRPM'].set(mClutchRPM)
-    self.vars['Gear'].set(GEARS[self.info.Rf2Tele.mVehicles[0].mGear+1])
-    self.vars['rF2 running'].set(self.info.isRF2running())
-    self.vars['Track loaded'].set(self.info.isTrackLoaded())
-    self.vars['On track'].set(self.info.isOnTrack())
-    self.vars['AI driving'].set(self.info.isOnTrack() and \
-      self.info.isAiDriving())
-    if self.graunch_o:
-      self.vars['Graunching'].set(self.graunch_o.isGraunching())
-    
-    self.parentFrame.after(200, self.tick)
+    self.info.playersVehicleTelemetry().mClutchRPM = int(self.vars['ClutchRPM'].get())
 
   #######################################
 
@@ -225,7 +154,124 @@ class Gui:
     self.info.close()
     self.parentFrame.destroy()
 
+####################################################
+class mock(Gui):
+  # Subclass for GUI items for Mock.
+  def __init__(self, parentFrame, maxRevs=10000, maxFwdGears=6):
+    Gui.__init__(self, parentFrame, maxRevs, maxFwdGears)
+    tkLabel_Options = tk.Label(parentFrame, 
+                                text='Simple GUI to fake clutch, gear selection and revs\n'
+                                '"Auto clutch" presses and releases the clutch')
+    tkLabel_Options.grid(column=1, row=0, columnspan=3)
+
+    tkFrame_Clutch = tk.LabelFrame(parentFrame, text='Clutch')
+    tkFrame_Clutch.grid(column=1, row=1, sticky='nsew', padx=self.xPadding)
+
+    self._tkCheckbuttons['Clutch pressed'] = tk.Checkbutton(tkFrame_Clutch, 
+                                                  text='Pressed',
+                                                  variable=self.vars['Clutch pressed'],
+                                                  command=self.__clutchOperation)
+
+    self._tkCheckbuttons['Clutch pressed'].grid(sticky='w')
+
+    self._tkCheckbuttons['Auto clutch'] = tk.Checkbutton(tkFrame_Clutch, 
+                                                  text='Automatic',
+                                                  variable=self.vars['Auto clutch'])
+
+    self._tkCheckbuttons['Auto clutch'].grid(sticky='w')
+
   ####################################### Commands
+  def __operateClutch(self, pressed):
+    if pressed:
+      self.info.playersVehicleTelemetry().mUnfilteredClutch = 1.0 # 1.0 clutch down, 0 clutch up
+      sleep(CLUTCH_DELAY)
+      print('[Mock: Clutch pressed]')
+    else:
+      self.info.playersVehicleTelemetry().mUnfilteredClutch = 0.0 # 1.0 clutch down, 0 clutch up
+      sleep(CLUTCH_DELAY)
+      print('[Mock: Clutch released]')
+  def __clutchOperation(self):
+    self.__operateClutch(self.vars['Clutch pressed'].get())
+
+  def _gearChange(self):
+    if self.vars['Auto clutch'].get():
+      self.__operateClutch(True)
+    print('[Mock: gear %s]' % self.vars['Gear'].get())
+    self.info.playersVehicleTelemetry().mGear = GEARS.index(self.vars['Gear'].get())-1 
+    # -1=reverse, 0=neutral, 1+=forward gears
+    sleep(GEAR_DELAY)
+    if self.vars['Auto clutch'].get():
+      self.__operateClutch(False)
+
+####################################################
+class live(Gui):
+  # Subclass for GUI items for Live.
+  def __init__(self, parentFrame, graunch_o, maxRevs=10000, maxFwdGears=6, instructions=''):
+    Gui.__init__(self, parentFrame, maxRevs, maxFwdGears)
+    self._timestamp = 0
+    self.graunch_o = graunch_o
+    self._createBoolVar('Graunching', False)
+    self._createVar('Clutch', 0)
+
+    tkFrame_Instructions = tk.LabelFrame(parentFrame)
+    tkFrame_Instructions.grid(column=1, row=1, sticky='nsew', padx=self.xPadding)
+    tkLabel_instructions = tk.Label(tkFrame_Instructions, 
+                                    justify='l',
+                                    wraplength=200,
+                                    text=instructions)
+    tkLabel_instructions.grid(column=1, row=0, sticky='ew', padx=self.xPadding, columnspan=2)
+
+    tkLabel_Clutch = tk.Label(tkFrame_Instructions, 
+                                          text='Clutch',
+                                          #font=fontBold,
+                                          justify=tk.LEFT)
+    tkLabel_Clutch.grid(column=1, row=1, sticky='w')
+    tkScale_Clutch = tk.Scale(tkFrame_Instructions, 
+                                  from_=0, 
+                                  to=100, 
+                                  orient=tk.HORIZONTAL, 
+                                  variable=self.vars['Clutch'])
+    tkScale_Clutch.grid(column=2, row=1, sticky='wns')
+
+    self._tkCheckbuttons['Graunching'] = tk.Checkbutton(tkFrame_Instructions, 
+                                                  text='Graunching',
+                                                  variable=self.vars['Graunching'])
+    self._tkCheckbuttons['Graunching'].grid(column=1, row=2, sticky='sw', padx=self.xPadding)
+  
+    # Kick off the tick
+    self.__tick()
+
+  ####################################### 
+
+  def __tick(self):
+    # timed callback to update live status
+    mEngineRPM = int(self.info.playersVehicleTelemetry().mEngineRPM)
+    mClutchRPM = int(self.info.playersVehicleTelemetry().mClutchRPM)
+    mClutch = int(self.info.playersVehicleTelemetry().mUnfilteredClutch*100)
+    self.vars['EngineRPM'].set(mEngineRPM)
+    self.vars['ClutchRPM'].set(mClutchRPM)
+    self.vars['Clutch'].set(mClutch)
+    self.vars['Gear'].set(GEARS[self.info.playersVehicleTelemetry().mGear+1])
+    self.vars['rF2 running'].set(self.info.isRF2running())
+    self.vars['Track loaded'].set(self.info.isTrackLoaded())
+    self.vars['On track'].set(self.info.isOnTrack())
+    #self.vars['Escape pressed'].set(not self._timestamp < self.info.playersVehicleScoring().mTimeIntoLap)
+    if self._timestamp < self.info.playersVehicleScoring().mTimeIntoLap:
+      self.vars['Escape pressed'].set(False)
+    else:
+      self.vars['Escape pressed'].set(True)
+    self._timestamp = self.info.playersVehicleScoring().mTimeIntoLap
+
+    self.vars['AI driving'].set(self.info.isOnTrack() and \
+      self.info.isAiDriving())
+    self.vars['Graunching'].set(self.graunch_o.isGraunching())
+    
+    self.parentFrame.after(200, self.__tick)
+
+  def _gearChange(self):
+    # Null command
+    pass
+####################################### Commands
 
 class Menu:
   def __init__(self, 
@@ -260,7 +306,12 @@ def gui(maxRevs=10000, maxFwdGears=6, mocking=False, instructions='', graunch_o=
   mockMemoryMap = ttk.Frame(root, width=1200, height=1200, relief='sunken', borderwidth=5)
   mockMemoryMap.grid()
     
-  o_gui = Gui(mockMemoryMap,maxRevs=maxRevs,maxFwdGears=maxFwdGears,mocking=mocking,instructions=instructions,graunch_o=graunch_o)
+  if mocking:
+    o_gui = mock(mockMemoryMap,maxRevs,maxFwdGears)
+    #o_gui.mock()
+  else:
+    o_gui = live(mockMemoryMap,graunch_o,maxRevs,maxFwdGears,instructions=instructions)
+
   # Trying for a clean shutdown 
   # root.protocol("WM_DELETE_WINDOW", o_gui.on_closing)
   root.mainloop()
@@ -268,4 +319,12 @@ def gui(maxRevs=10000, maxFwdGears=6, mocking=False, instructions='', graunch_o=
 
 if __name__ == '__main__':
   # To run this frame by itself for development
-  gui(mocking=True)
+  class graunch:  #dummy
+    def isGraunching(self):
+      return False
+
+  graunch_o = graunch()
+
+  gui(mocking=True, 
+      instructions='Ipso lorem\nBlah blah blah blah blah blah blah blah blah blah', 
+      graunch_o=graunch_o)

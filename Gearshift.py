@@ -21,9 +21,9 @@ import sys
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 37 # The git commit count
+BUILD_REVISION = 42 # The git commit count
 versionStr = 'gearshift V2.2.%d' % BUILD_REVISION
-versionDate = '2019-04-23'
+versionDate = '2019-04-24'
 
 credits = "Reads the clutch and shifter from rF2 using k3nny's Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -67,6 +67,7 @@ clutchDisengage         = 'clutchDisengage'
 clutchEngage            = 'clutchEngage'
 gearSelect              = 'gearSelect'
 gearDeselect            = 'gearDeselect'
+smStop                  = 'stop'  # Stop the state machine
 
 #globals 
 gearState = 'neutral' # TBD
@@ -123,8 +124,9 @@ class graunch:
 
 
   def graunchStop(self):
+        if self.graunching:
+          SoundStop()  # stop the noise
         self.graunching = False
-        SoundStop()  # stop the noise
         self.graunch1()
 
 
@@ -172,6 +174,9 @@ def gearStateMachine(event):
       pass
     elif event == gearDeselect:
       pass
+    elif event == smStop:
+      graunch_o.graunchStop()
+      gearState = neutral
     else:
             msgBox('gearStateMachine() invalid event %s' % event)
 
@@ -342,7 +347,7 @@ def WatchClutchAndShifter():
 
 #############################################################
 
-def memoryMapCallback(clutchEvent=None, gearEvent=None):
+def memoryMapCallback(clutchEvent=None, gearEvent=None, stopEvent=False):
   if clutchEvent != None:
     WatchClutch(clutchEvent)
   if gearEvent != None:
@@ -350,7 +355,8 @@ def memoryMapCallback(clutchEvent=None, gearEvent=None):
             gearStateMachine(gearDeselect)
     else:
             gearStateMachine(gearSelect)
-
+  if stopEvent:
+    gearStateMachine(smStop)
 
 def ShowButtons():
   pass

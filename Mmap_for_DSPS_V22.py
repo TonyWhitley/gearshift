@@ -402,6 +402,8 @@ class SimInfo:
         self._rf2_ext = mmap.mmap(0, ctypes.sizeof(rF2Extended), "$rFactor2SMMP_Extended$")
         self.Rf2Ext = rF2Extended.from_buffer(self._rf2_ext)
 
+    ###########################################################
+    # Access functions
     def isRF2running(self):
         """
         True: rF2 is running and the memory map is loaded
@@ -432,6 +434,44 @@ class SimInfo:
         return self.Rf2Scor.mVehicles[0].mControl == 1  # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
         # didn't work self.Rf2Ext.mPhysics.mAIControl
 
+    """
+    def getPlayers(self, variableName):
+      # Get the variable for the player's vehicle
+      __player = self.Rf2Tele.mVehicles[0]
+      variables = {
+        'ClutchRPM':          __player.mClutchRPM,
+        'EngineMaxRPM':       __player.mEngineMaxRPM,
+        'EngineRPM':          __player.mEngineRPM,
+        'Gear':               __player.mGear,
+        'UnfilteredClutch':   __player.mUnfilteredClutch
+        }
+      try:
+        return variables[variableName]
+      except NameError:
+        return -99
+      else:
+        return 0
+
+    def setPlayers(self, variableName, value):
+      # Set the variable for the player's vehicle
+      __player = self.Rf2Tele.mVehicles[0]
+      if   variableName == 'ClutchRPM':          __player.mClutchRPM=value
+      elif variableName == 'EngineMaxRPM':       __player.mEngineMaxRPM=value
+      elif variableName == 'EngineRPM':          __player.mEngineRPM=value
+      elif variableName == 'Gear':               __player.mGear=value
+      elif variableName == 'UnfilteredClutch':   __player.mUnfilteredClutch=value
+      else:
+       raise NameError
+    """
+
+    def playersVehicleTelemetry(self):
+      # Get the variable for the player's vehicle
+      return self.Rf2Tele.mVehicles[0]
+
+    def playersVehicleScoring(self):
+      # Get the variable for the player's vehicle
+      return self.Rf2Scor.mVehicles[0]
+
     def close(self):
       # This didn't help with the errors
       try:
@@ -456,18 +496,22 @@ def Cbytestring2Python(bytestring):
 if __name__ == '__main__':
     # Example usage
     info = SimInfo()
-    clutch = info.Rf2Tele.mVehicles[0].mUnfilteredClutch # 1.0 clutch down, 0 clutch up
-    info.Rf2Tele.mVehicles[0].mGear = 1
-    gear   = info.Rf2Tele.mVehicles[0].mGear  # -1 to 6
-    info.Rf2Tele.mVehicles[0].mGear = 2
-    gear   = info.Rf2Tele.mVehicles[0].mGear  # -1 to 6
+    clutch = info.playersVehicleTelemetry().mUnfilteredClutch # 1.0 clutch down, 0 clutch up
+    info.playersVehicleTelemetry().mGear = 1
+    gear   = info.playersVehicleTelemetry().mGear  # -1 to 6
+    assert info.playersVehicleTelemetry().mGear == 1
+    info.playersVehicleTelemetry().mGear = 2
+    assert info.playersVehicleTelemetry().mGear == 2
+    gear   = info.playersVehicleTelemetry().mGear  # -1 to 6
+    info.playersVehicleTelemetry().mGear = 1
+    assert info.playersVehicleTelemetry().mGear == 1
 
-    driver = Cbytestring2Python(info.Rf2Scor.mVehicles[0].mDriverName)
+    driver = Cbytestring2Python(playersVehicleScoring().mDriverName)
     print('%s Gear: %d, Clutch position: %d' % (driver, gear, clutch))
 
-    vehicleName = Cbytestring2Python(info.Rf2Scor.mVehicles[0].mVehicleName)
+    vehicleName = Cbytestring2Python(playersVehicleScoring().mVehicleName)
     trackName = Cbytestring2Python(info.Rf2Scor.mScoringInfo.mTrackName)
-    vehicleClass = Cbytestring2Python(info.Rf2Scor.mVehicles[0].mVehicleClass)
+    vehicleClass = Cbytestring2Python(playersVehicleScoring().mVehicleClass)
     
     started = info.Rf2Ext.mSessionStarted
     realtime = info.Rf2Ext.mInRealtimeFC
@@ -488,7 +532,7 @@ if __name__ == '__main__':
       print('Track is not loaded')
 
     if info.isOnTrack():
-      driver = Cbytestring2Python(info.Rf2Scor.mVehicles[0].mDriverName)
+      driver = Cbytestring2Python(playersVehicleScoring().mDriverName)
       print('Driver "%s" is on track' % driver)
     else:
       print('Driver is not on track')

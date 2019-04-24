@@ -33,7 +33,8 @@ class MyThread(Thread):
         self.tick_interval = tick_interval
 
     def run(self):
-        while not self.stopped.wait(self.tick_interval):
+        while not self._stop_event.isSet():
+            time.sleep(self.tick_interval)
             self.callback()
 
     def stop(self):

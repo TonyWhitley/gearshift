@@ -21,7 +21,7 @@ class rF2Vec3(ctypes.Structure):
         ('z', ctypes.c_double),
     ]
 
-class rF2Wheel(ctypes.Structure):
+class TelemWheelV01(ctypes.Structure):
     _pack_ = 4
     _fields_ = [
         ('mSuspensionDeflection', ctypes.c_double),               # metres
@@ -113,9 +113,9 @@ class rF2VehicleTelemetry(ctypes.Structure):
         ('mDrag', ctypes.c_double),                               # drag
         ('mFrontDownforce', ctypes.c_double),                     # front downforce
         ('mRearDownforce', ctypes.c_double),                      # rear downforce
-        ('mFuel', ctypes.c_double),                               # amount of fuel (litres)
 
         # State/damage info
+        ('mFuel', ctypes.c_double),                               # amount of fuel (litres)
         ('mEngineMaxRPM', ctypes.c_double),                       # rev limit
         ('mScheduledStops', ctypes.c_ubyte),                      # number of scheduled pitstops
         ('mOverheating', ctypes.c_ubyte),                         # whether overheating icon is shown
@@ -156,7 +156,7 @@ class rF2VehicleTelemetry(ctypes.Structure):
         ('mExpansion', ctypes.c_ubyte*152),       
 
         # keeping this at the end of the structure to make it easier to replace in future versions
-        ('mWheels', rF2Wheel*4),       
+        ('mWheels', TelemWheelV01*4),       
     ]
 
 

@@ -21,9 +21,9 @@ import sys
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 43 # The git commit count
+BUILD_REVISION = 44 # The git commit count
 versionStr = 'gearshift V2.2.%d' % BUILD_REVISION
-versionDate = '2019-04-24'
+versionDate = '2019-04-25'
 
 credits = "Reads the clutch and shifter from rF2 using k3nny's Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -40,7 +40,8 @@ import directInputKeySend
 
 from memoryMapInputs import Controls
 
-ForwardGears = 6            # Plus reverse
+#ForwardGears = 6            # Plus reverse
+# Main config variables, loaded from gearshift.ini
 ReverseClutchAxis = False   # If True then the clutch input goes from 100 (down) to 0 (up)
 TestMode       =    False   # If True then show shifter and clutch operation
 mockInput      =    False   # If True then use mock input
@@ -56,11 +57,25 @@ reshift =           True    # If True then neutral has to be selected before
 
 # Nothing much to twiddle with from here on
 
+# Config variables, also loaded from gearshift.ini
 global debug
 debug           =   0       # 0, 1, 2 or 3
 sharedMemory    =   1
 #AutoRepeat     =   0
-#NeutralBtn     The key used to force neutral, whatever the shifter says
+neutralButton   =   None  # The key used to force neutral, whatever the shifter says
+shifterController_o = None
+clutchController_o = None
+clutchAxis = None
+graunchWav = None
+Shifter1 = None
+Shifter2 = None
+Shifter3 = None
+Shifter4 = None
+Shifter5 = None
+Shifter6 = None
+Shifter7 = None
+Shifter8 = None
+ShifterR = None
 
 # Gear change events
 clutchDisengage         = 'clutchDisengage'
@@ -75,6 +90,7 @@ gearState = 'neutral' # TBD
 ClutchPrev = 2  # Active states are 0 and 1 so 2 is "unknown"
 KeyToHoldDown = 0
 Delete = -1  # delete timer
+graunch_o = None
 
 #################################################################################
 # AHK replacement fns

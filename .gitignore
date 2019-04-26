@@ -340,3 +340,8 @@ ASALocalRun/
 /gearshift.iniX
 /InternalsPlugin
 /Mmap_for_DSPS_tw.py
+
+# MyPy cache
+.mypy_cache/
+.vscode/settings.json
+.pylintrc

@@ -402,6 +402,8 @@ class SimInfo:
         self._rf2_ext = mmap.mmap(0, ctypes.sizeof(rF2Extended), "$rFactor2SMMP_Extended$")
         self.Rf2Ext = rF2Extended.from_buffer(self._rf2_ext)
 
+        self.player = 0
+
     ###########################################################
     # Access functions
     def isRF2running(self):
@@ -431,16 +433,24 @@ class SimInfo:
         """
         True: rF2 is running and the player is on track
         """
-        return self.Rf2Scor.mVehicles[0].mControl == 1  # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
+        return self.Rf2Scor.mVehicles[self.player].mControl == 1  # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
         # didn't work self.Rf2Ext.mPhysics.mAIControl
 
+    def driverName(self):
+        return Cbytestring2Python(self.Rf2Scor.mVehicles[self.player].mDriverName)
+
     def playersVehicleTelemetry(self):
+      # Find the player's driver number
+      for player in range(50): #self.Rf2Tele.mVehicles[0].mNumVehicles:
+        if self.Rf2Scor.mVehicles[player].mIsPlayer:
+          self.player = player
+          break
       # Get the variable for the player's vehicle
-      return self.Rf2Tele.mVehicles[0]
+      return self.Rf2Tele.mVehicles[self.player]
 
     def playersVehicleScoring(self):
       # Get the variable for the player's vehicle
-      return self.Rf2Scor.mVehicles[0]
+      return self.Rf2Scor.mVehicles[self.player]
 
     def close(self):
       # This didn't help with the errors
@@ -463,7 +473,7 @@ def Cbytestring2Python(bytestring):
     """
     return bytes(bytestring).partition(b'\0')[0].decode().rstrip()
 
-if __name__ == '__main__':
+def main():
     # Example usage
     info = SimInfo()
     clutch = info.playersVehicleTelemetry().mUnfilteredClutch # 1.0 clutch down, 0 clutch up
@@ -476,12 +486,12 @@ if __name__ == '__main__':
     info.playersVehicleTelemetry().mGear = 1
     assert info.playersVehicleTelemetry().mGear == 1
 
-    driver = Cbytestring2Python(playersVehicleScoring().mDriverName)
+    driver = Cbytestring2Python(info.playersVehicleScoring().mDriverName)
     print('%s Gear: %d, Clutch position: %d' % (driver, gear, clutch))
 
-    vehicleName = Cbytestring2Python(playersVehicleScoring().mVehicleName)
+    vehicleName = Cbytestring2Python(info.playersVehicleScoring().mVehicleName)
     trackName = Cbytestring2Python(info.Rf2Scor.mScoringInfo.mTrackName)
-    vehicleClass = Cbytestring2Python(playersVehicleScoring().mVehicleClass)
+    vehicleClass = Cbytestring2Python(info.playersVehicleScoring().mVehicleClass)
     
     started = info.Rf2Ext.mSessionStarted
     realtime = info.Rf2Ext.mInRealtimeFC
@@ -506,6 +516,8 @@ if __name__ == '__main__':
       print('Driver "%s" is on track' % driver)
     else:
       print('Driver is not on track')
+    return 'OK'
 
 
-    pass
+if __name__ == '__main__':
+  main()

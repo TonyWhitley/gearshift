@@ -21,9 +21,9 @@ import sys
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 43 # The git commit count
-versionStr = 'gearshift V2.2.%d' % BUILD_REVISION
-versionDate = '2019-04-24'
+BUILD_REVISION = 44 # The git commit count
+versionStr = 'gearshift V2.3.%d' % BUILD_REVISION
+versionDate = '2019-04-28'
 
 credits = "Reads the clutch and shifter from rF2 using k3nny's Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -67,6 +67,7 @@ clutchDisengage         = 'clutchDisengage'
 clutchEngage            = 'clutchEngage'
 gearSelect              = 'gearSelect'
 gearDeselect            = 'gearDeselect'
+graunchTimeout          = 'graunchTimeout'  # Memory-mapped mode
 smStop                  = 'stop'  # Stop the state machine
 
 #globals 
@@ -141,9 +142,22 @@ class graunch:
       if self.graunching:      
         # Send the "Neutral" key press
         directInputKeySend.PressKey(neutralButton)
-        SetTimer(self.graunch1, 100)
+        if sharedMemory != 0:
+          SetTimer(self.graunch3, 3000)
+        else:
+          SetTimer(self.graunch1, 100)
         if debug >= 1:
             directInputKeySend.PressReleaseKey('DIK_G')
+
+  def graunch3(self):
+      """ Shared memory.
+      Neutral key causes gearDeselect event but if player doesn't move shifter
+      to neutral then rF2 will quickly report that it's in gear again,
+      causing a gearSelect event.
+      If SM is still in neutral (gearSelect hasn't happened) when this timer 
+      expires then player has moved shifter to neutral
+      """
+      gearStateMachine(graunchTimeout)
 
   def isGraunching(self):
     return self.graunching
@@ -162,6 +176,7 @@ def gearStateMachine(event):
     inGear                 = 'inGear'
     graunching             = 'graunching'
     graunchingClutchDown   = 'graunchingClutchDown'
+    neutralKeySent         = 'neutralKeySent'
 
     if debug >= 3:
         msgBox('gearState %s event %s' % (gearState, event))
@@ -173,6 +188,8 @@ def gearStateMachine(event):
     elif event == gearSelect:
       pass
     elif event == gearDeselect:
+      pass
+    elif event == graunchTimeout:
       pass
     elif event == smStop:
       graunch_o.graunchStop()
@@ -188,6 +205,8 @@ def gearStateMachine(event):
         elif event == gearSelect:
                 graunch_o.graunchStart()
                 gearState = graunching
+        elif event == graunchTimeout:
+                graunch_o.graunchStop()
 
     elif gearState == clutchDown:
         if event == gearSelect:
@@ -247,11 +266,24 @@ def gearStateMachine(event):
                   # When the Neutral button is banged rF sets gear to Neutral
                   gearState = neutral
                   graunch_o.graunchStop()
+                else:
+                  gearState = neutralKeySent
                 pass
         elif event == gearSelect:
                 graunch_o.graunchStop()
                 graunch_o.graunchStart()   # graunch again
                 pass
+
+    elif gearState == neutralKeySent:
+        # rF2 will have put it into neutral but if shifter
+        # still in gear it will have put it back in gear again
+        if event == gearSelect:
+                gearState = graunching
+        elif event == graunchTimeout:
+                # timed out and still not in gear, player has
+                # shifted to neutral
+                gearState = neutral
+                graunch_o.graunchStop()
 
     elif gearState == graunchingClutchDown:
         if event == clutchEngage:
@@ -363,7 +395,7 @@ def ShowButtons():
 
 global neutralButtonKeycode
 
-if __name__ == "__main__":
+def main():
   #global neutralButtonKeycode
 
   config_o = Config()
@@ -448,16 +480,23 @@ if __name__ == "__main__":
         shifterController_o.run(WatchClutchAndShifter)
     else:
         SetTimer(ShowButtons, 100)
+    return 'OK'
 
 #############################################################
   else: # Using shared memory, reading clutch state and gear selected direct from rF2
-    controls_o = Controls(debug=debug)
+    controls_o = Controls(debug=debug,mocking=mockInput)
     controls_o.run(memoryMapCallback)
     # mockInput: testing using the simple GUI to poke inputs into the memory map
     # otherwise just use the GUI slightly differently
-    gui(mocking=mockInput,instructions=instructions,graunch_o=graunch_o,controls_o=controls_o)
+    root = gui(mocking=mockInput,
+               instructions=instructions,
+               graunch_o=graunch_o,
+               controls_o=controls_o)
     controls_o.stop()
-    pass
+    return root
 #############################################################
 
-
+if __name__ == "__main__":
+  root = main()
+  if root != 'OK':
+    root.mainloop()

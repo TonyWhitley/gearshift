@@ -12,8 +12,9 @@ tick_interval = 0.1 # seconds
 _timestamp = 0
 
 class Controls:
-  def __init__(self, debug=0):
+  def __init__(self, debug=0, mocking=False):
     self.debug = debug
+    self.mocking=mocking
     self.info = SimInfo()
     self._SMactive = False
     if self.debug > 5:
@@ -36,7 +37,7 @@ class Controls:
 
   def monitor(self):
     # Run every tick_interval
-    stop= self.reasons2stop()
+    stop = self.reasons2stop()
     if stop:
       self.callback(stopEvent=True)
       self._SMactive = False
@@ -71,22 +72,24 @@ class Controls:
     global _timestamp
     ret = ''
 
-    if not self.info.isRF2running():
-      return 'rF2 not running'
-    if not self.info.isTrackLoaded():
-      return 'Track not loaded'
-    if not self.info.isOnTrack():
-      return 'Not on track'
-    if self.getDriverType() != 0:
-      return 'AI in control'
-    #if not self.info.playersVehicleTelemetry().mIgnitionStarter:  # Ignition off
-    #  return 'Ignition off'
-    if self.info.playersVehicleTelemetry().mEngineRPM == 0:  # Engine has stopped
-      return 'Engine stopped'
-    if not _timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
-        ret = 'Esc pressed, mElapsedTime stopped'
+    if not self.mocking:
+      if not self.info.isRF2running():
+        return 'rF2 not running'
+      if not self.info.isTrackLoaded():
+        return 'Track not loaded'
+      if not self.info.isOnTrack():
+        return 'Not on track'
+      if self.getDriverType() != 0:
+        return 'AI in control'
+      #if not self.info.playersVehicleTelemetry().mIgnitionStarter:  # Ignition off
+      #  return 'Ignition off'
+      if self.info.playersVehicleTelemetry().mEngineRPM == 0:  # Engine has stopped
+        return 'Engine stopped'
+      if not _timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
+          ret = 'Esc pressed, mElapsedTime stopped'
 
-    _timestamp = self.info.playersVehicleTelemetry().mElapsedTime
+      _timestamp = self.info.playersVehicleTelemetry().mElapsedTime
+
     # OK, no reason NOT to run the state machine
     return ret
 
@@ -95,6 +98,9 @@ class Controls:
 
   def getMaxRevs(self):
     return self.info.playersVehicleTelemetry().mEngineMaxRPM
+
+  def getMaxGears(self):
+    return self.info.playersVehicleTelemetry().mMaxGears
 
   def getDriverType(self):
     return self.info.playersVehicleScoring().mControl  # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
@@ -108,17 +114,34 @@ class Controls:
   def stop(self):
     self.thread.stop()
 
-def callback(clutchEvent=None, gearEvent=None):
-    clutch = controls_o.clutchState
-    gear   = controls_o.currentGear
-    driver = 'Max Snell'
-    print('Driver %s, Gear: %d, Clutch position: %d' % (driver, gear, clutch))
+  def SMactive(self):
+    return True
+
+def callback(clutchEvent=None, gearEvent=None, stopEvent=None):
+    if clutchEvent or gearEvent or stopEvent:
+      clutch = controls_o.clutchState
+      gear   = controls_o.currentGear
+      driver = 'Max Snell'
+      print('Driver %s, Gear: %d, Clutch position: %d' % (driver, gear, clutch))
+
+def main():
+    class graunch:  #dummy
+      def isGraunching(self):
+        return False
+
+    graunch_o = graunch()
+    controls_o = Controls(mocking=True)
+    controls_o.run(callback)
+    controls_o.monitor()  # show initial state
+    root = gui(10000, 
+        6,
+        mocking=True,
+        graunch_o=graunch_o,
+        controls_o=controls_o)
+    controls_o.stop()
+    return root
+
 
 if __name__ == '__main__':
-    controls_o = Controls()
-    controls_o.monitor()  # show initial state
-    controls_o.run(callback)
-    gui(controls_o.getMaxRevs())
-    controls_o.stop()
-
-
+   root = main()
+   root.mainloop() # having that separate allows for unit testing main()

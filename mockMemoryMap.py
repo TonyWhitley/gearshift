@@ -10,7 +10,9 @@ from Mmap_for_DSPS_V22 import SimInfo, Cbytestring2Python
 
 GEARS = ['Reverse', 'Neutral','1','2','3','4','5','6','7','8']
 CLUTCH_DELAY = 100.0 / 1000.0   # 100 mS
-GEAR_DELAY = 200.0 / 1000.0   # 100 mS
+GEAR_DELAY = 200.0 / 1000.0     # 200 mS
+GRAUNCH_DELAY = 100.0 / 1000.0
+GRAUNCH_DELAY2 = 200.0 / 1000.0
 TICKOVER = 1000
 
 class Gui:
@@ -67,6 +69,11 @@ class Gui:
                                                   text='AI driving',
                                                   variable=self.vars['AI driving'])
     self._tkCheckbuttons['AI driving'].grid(sticky='w')
+
+    self._createVar('Player', False)
+    self.driverLabel = tk.Label(tkFrame_Status,
+                           text='')
+    self.driverLabel.grid(sticky='w')
 
     ####################################################
     self._createBoolVar('Clutch pressed', False)
@@ -157,8 +164,9 @@ class Gui:
 ####################################################
 class mock(Gui):
   # Subclass for GUI items for Mock.
-  def __init__(self, parentFrame, maxRevs=10000, maxFwdGears=6):
+  def __init__(self, parentFrame, graunch_o, maxRevs=10000, maxFwdGears=6):
     Gui.__init__(self, parentFrame, maxRevs, maxFwdGears)
+    self.graunch_o = graunch_o
     tkLabel_Options = tk.Label(parentFrame, 
                                 text='Simple GUI to fake clutch, gear selection and revs\n'
                                 '"Auto clutch" presses and releases the clutch')
@@ -194,14 +202,29 @@ class mock(Gui):
     self.__operateClutch(self.vars['Clutch pressed'].get())
 
   def _gearChange(self):
-    if self.vars['Auto clutch'].get():
-      self.__operateClutch(True)
-    print('[Mock: gear %s]' % self.vars['Gear'].get())
-    self.info.playersVehicleTelemetry().mGear = GEARS.index(self.vars['Gear'].get())-1 
+    # Gear has been changed
+    _gear = GEARS.index(self.vars['Gear'].get())-1
     # -1=reverse, 0=neutral, 1+=forward gears
-    sleep(GEAR_DELAY)
-    if self.vars['Auto clutch'].get():
-      self.__operateClutch(False)
+
+    if _gear != 0:
+      if self.vars['Auto clutch'].get():
+        self.__operateClutch(True)
+      print('[Mock: gear %s]' % self.vars['Gear'].get())
+      self.info.playersVehicleTelemetry().mGear = _gear 
+      sleep(GEAR_DELAY)
+      if self.vars['Auto clutch'].get():
+        self.__operateClutch(False)
+
+      # if we're graunching it rF2 will set gear to Neutral
+      # momentarily before putting it back in gear if it hasn't
+      # been shifted to neutral
+      if self.graunch_o.isGraunching():
+        sleep(GRAUNCH_DELAY)
+        self.info.playersVehicleTelemetry().mGear = 0
+        sleep(GRAUNCH_DELAY2)
+        self.info.playersVehicleTelemetry().mGear = _gear
+    else: # Neutral
+      self.info.playersVehicleTelemetry().mGear = _gear 
 
 ####################################################
 class live(Gui):
@@ -225,25 +248,26 @@ class live(Gui):
     tkLabel_instructions.grid(column=1, row=0, sticky='ew', padx=self.xPadding, columnspan=2)
 
     tkLabel_Clutch = tk.Label(tkFrame_Instructions, 
-                                          text='Clutch',
+                                          text='Clutch engaged',
                                           #font=fontBold,
                                           justify=tk.LEFT)
-    tkLabel_Clutch.grid(column=1, row=1, sticky='w')
+    tkLabel_Clutch.grid(column=1, row=1, sticky='e')
     tkScale_Clutch = tk.Scale(tkFrame_Instructions, 
-                                  from_=0, 
-                                  to=100, 
-                                  orient=tk.HORIZONTAL, 
-                                  variable=self.vars['Clutch'])
+                              from_=0, 
+                              to=100, 
+                              orient=tk.HORIZONTAL, 
+                              showvalue=0,
+                              variable=self.vars['Clutch'])
     tkScale_Clutch.grid(column=2, row=1, sticky='wns')
 
     self._tkCheckbuttons['SMactive'] = tk.Checkbutton(tkFrame_Instructions, 
-                                                  text='SM active',
-                                                  variable=self.vars['SMactive'])
+                                                      text='SM active',
+                                                      variable=self.vars['SMactive'])
     self._tkCheckbuttons['SMactive'].grid(column=1, row=2, sticky='sw', padx=self.xPadding)
 
     self._tkCheckbuttons['Graunching'] = tk.Checkbutton(tkFrame_Instructions, 
-                                                  text='Graunching',
-                                                  variable=self.vars['Graunching'])
+                                                        text='Graunching',
+                                                        variable=self.vars['Graunching'])
     self._tkCheckbuttons['Graunching'].grid(column=2, row=2, sticky='sw', padx=self.xPadding)
   
     # Kick off the tick
@@ -263,6 +287,7 @@ class live(Gui):
     self.vars['rF2 running'].set(self.info.isRF2running())
     self.vars['Track loaded'].set(self.info.isTrackLoaded())
     self.vars['On track'].set(self.info.isOnTrack())
+    self.driverLabel.config(text=self.info.driverName())
     #self.vars['Escape pressed'].set(not self._timestamp < self.info.playersVehicleScoring().mTimeIntoLap)
     if not self.info.isOnTrack() or \
       self._timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
@@ -316,7 +341,7 @@ def gui(maxRevs=10000, maxFwdGears=6, mocking=False, instructions='', graunch_o=
   mockMemoryMap.grid()
     
   if mocking:
-    o_gui = mock(mockMemoryMap,maxRevs,maxFwdGears)
+    o_gui = mock(mockMemoryMap,graunch_o,maxRevs,maxFwdGears)
   else:
     o_gui = live(mockMemoryMap,
                  graunch_o,                 # to read Graunch status
@@ -328,17 +353,24 @@ def gui(maxRevs=10000, maxFwdGears=6, mocking=False, instructions='', graunch_o=
 
   # Trying for a clean shutdown 
   # root.protocol("WM_DELETE_WINDOW", o_gui.on_closing)
-  root.mainloop()
+  return root
   pass
 
-if __name__ == '__main__':
-  # To run this frame by itself for development
+def main():
   class graunch:  #dummy
     def isGraunching(self):
       return False
+    def SMactive(self):
+      return True
 
   graunch_o = graunch()
 
-  gui(mocking=True, 
-      instructions='Ipso lorem\nBlah blah blah blah blah blah blah blah blah blah', 
-      graunch_o=graunch_o)
+  root = gui(mocking=True, 
+             instructions='Ipso lorem\nBlah blah blah blah blah blah blah blah blah blah', 
+             graunch_o=graunch_o)
+  return root
+
+if __name__ == '__main__':
+  # To run this frame by itself for development
+  root = main()
+  root.mainloop() # having that separate allows for unit testing main()

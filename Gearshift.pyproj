@@ -46,6 +46,12 @@
     <Compile Include="scheduler.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Tests\test_Gearshift.py" />
+    <Compile Include="Tests\test_MemoryMapInputs.py" />
+    <Compile Include="Tests\test_Mmap_for_DSPS_V22.py" />
+    <Compile Include="Tests\test_mockMemoryMap.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="wheel.py">
       <SubType>Code</SubType>
     </Compile>
@@ -63,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Documentation\" />
+    <Folder Include="Tests\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Documentation\Gearshift.JPG" />

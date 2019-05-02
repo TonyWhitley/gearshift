@@ -26,7 +26,6 @@
     <Compile Include="configIni.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Configurer.py" />
     <Compile Include="damage.py">
       <SubType>Code</SubType>
     </Compile>
@@ -56,9 +55,6 @@
     <Compile Include="Tests\test_mockMemoryMap.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="wheel.py">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Documentation\" />
@@ -66,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Documentation\Gearshift.JPG" />
+    <Content Include="gearshift.ini" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />

@@ -11,7 +11,8 @@
     <OutputPath>.</OutputPath>
     <Name>Gearshift</Name>
     <RootNamespace>Gearshift</RootNamespace>
-    <InterpreterId>MSBuild|envPygame|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>Global|PythonCore|3.6</InterpreterId>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -60,22 +61,14 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Interpreter Include="envPygame\">
-      <Id>envPygame</Id>
-      <Version>3.6</Version>
-      <Description>envPygame (Python 3.6 (64-bit))</Description>
-      <InterpreterPath>Scripts\python.exe</InterpreterPath>
-      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
-      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
-      <Architecture>X64</Architecture>
-    </Interpreter>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Documentation\" />
     <Folder Include="Tests\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Documentation\Gearshift.JPG" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.6" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

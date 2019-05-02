@@ -1,36 +1,25 @@
-# Gearshift.py - monitors a shifter and clutch and if a gear change is not
-# done properly it repeatedly sends a "Neutral" key press to prevent the gear
-# being selected.
-# Designed for rFactor 2 but should work with any game. (Also tested on rFactor.)
+# Gearshift.py - monitors the rFactor 2 shared memory values for the shifter 
+# and clutch and if a gear change is not done properly it repeatedly sends a
+# "Neutral" key press to prevent the gear being selected.
 #
 # Inspired by http://www.richardjackett.com/grindingtranny
 # I borrowed Grind_default.wav from there to make the noise of the grinding
 # gears.
 #
-# The game has to have Numpad 0 mapped as "Neutral".
+# The game has to have a key mapped as "Neutral". (Default: Numpad 0)
 #
-# Notes:
-# Virtual env pygame runs OK but the exe pyinstaller produces has import errors.
-# Instead install pygame into the main install with
-# py -3.6 -m pip install pygame
-# Comment out the last two lines of C:\Python36\Lib\site-packages\pygame\__init__.py
-#print('pygame %s' % ver)
-#print('Hello from the pygame community. https://www.pygame.org/contribute.html')
 
-import sys
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 52 # The git commit count
-versionStr = 'gearshift V2.3.%d' % BUILD_REVISION
+BUILD_REVISION = 1 # The git branch commit count
+versionStr = 'gearshift V3.0.%d' % BUILD_REVISION
 versionDate = '2019-05-02'
 
 credits = "Reads the clutch and shifter from rF2 using k3nny's Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
  "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n" \
  "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n"
-
-# Translated from gearshift.ahk V1.5 tjw 2017-12-28
 
 from threading import Timer
 from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
@@ -41,12 +30,9 @@ import directInputKeySend
 from memoryMapInputs import Controls
 
 # Main config variables, loaded from gearshift.ini
-ReverseClutchAxis = False   # If True then the clutch input goes from 100 (down) to 0 (up)
-TestMode       =    False   # If True then show shifter and clutch operation
 mockInput      =    False   # If True then use mock input
 
 ClutchEngaged  =    90      # (0 - 100) the point in the travel where the clutch engages
-                            # if ReverseClutchAxis then ClutchEngaged = 10
 doubleDeclutch =    False   # Not yet implemented
 reshift =           True    # If True then neutral has to be selected before
                             # retrying failed change. If False then just have
@@ -59,7 +45,6 @@ reshift =           True    # If True then neutral has to be selected before
 # Config variables, also loaded from gearshift.ini
 global debug
 debug           =   0       # 0, 1, 2 or 3
-sharedMemory    =   1
 neutralButton   =   None  # The key used to force neutral, whatever the shifter says
 graunchWav = None
 
@@ -75,7 +60,6 @@ smStop                  = 'stop'  # Stop the state machine
 gearState = 'neutral' # TBD
 
 ClutchPrev = 2  # Active states are 0 and 1 so 2 is "unknown"
-KeyToHoldDown = 0
 graunch_o = None
 
 #################################################################################
@@ -86,14 +70,6 @@ def SetTimer(callback, mS):
     timer.start()
   else: 
     pass # TBD delete timer?
-
-def GetKeyState(input):
-  if input:
-    return shifterController_o.getButtonState(input)
-
-def GetClutchState():
-  return clutchController_o.getAxis(clutchAxis)
-
 
 def SoundPlay(soundfile):
   PlaySound(soundfile, SND_FILENAME|SND_LOOP|SND_ASYNC)
@@ -144,10 +120,7 @@ class graunch:
       if self.graunching:      
         # Send the "Neutral" key press
         directInputKeySend.PressKey(neutralButton)
-        if sharedMemory != 0:
-          SetTimer(self.graunch3, 3000)
-        else:
-          SetTimer(self.graunch1, 100)
+        SetTimer(self.graunch3, 3000)
         if debug >= 1:
             directInputKeySend.PressReleaseKey('DIK_G')
 
@@ -266,13 +239,7 @@ def gearStateMachine(event):
         elif event == clutchEngage:
                 graunch_o.graunchStart()   # graunch again
         elif event == gearDeselect:
-                if sharedMemory == 0:
-                  # When the Neutral button is banged rF sets gear to Neutral
-                  gearState = neutral
-                  graunch_o.graunchStop()
-                else:
-                  gearState = neutralKeySent
-                pass
+                gearState = neutralKeySent
         elif event == gearSelect:
                 graunch_o.graunchStop()
                 graunch_o.graunchStart()   # graunch again
@@ -307,16 +274,11 @@ def gearStateMachine(event):
 
 def WatchClutch(Clutch):
     # Clutch 100 is up, 0 is down to the floor
-    # Unless ReverseClutchAxis is True when it's the opposite.
     global ClutchPrev
     ClutchState = 1 # engaged
 
-    if ReverseClutchAxis == False:
-        if Clutch < ClutchEngaged:
-            ClutchState = 0  # clutch is disengaged
-    else:
-      if Clutch > ClutchEngaged:
-            ClutchState = 0  # clutch is disengaged
+    if Clutch < ClutchEngaged:
+        ClutchState = 0  # clutch is disengaged
 
     if ClutchState != ClutchPrev:
         if ClutchState == 0:
@@ -325,58 +287,6 @@ def WatchClutch(Clutch):
             gearStateMachine(clutchEngage)
 
     ClutchPrev = ClutchState
-
-def WatchClutchAndShifter():
-    global KeyToHoldDown
-
-    WatchClutch(GetClutchState())
-
-    Gear1 = GetKeyState(Shifter1)
-    Gear2 = GetKeyState(Shifter2)
-    Gear3 = GetKeyState(Shifter3)
-    Gear4 = GetKeyState(Shifter4)
-    Gear5 = GetKeyState(Shifter5)
-    Gear6 = GetKeyState(Shifter6)
-    Gear7 = GetKeyState(Shifter7)
-    Gear8 = GetKeyState(Shifter8)
-    GearR = GetKeyState(ShifterR)
-
-    KeyToHoldDownPrev = KeyToHoldDown  # Prev now holds the key that was down before (if any).
-
-    if   Gear1 == 'D':
-        KeyToHoldDown = 'DIK_NUMPAD1'
-    elif Gear2 == 'D':
-        KeyToHoldDown = 'DIK_NUMPAD2'
-    elif Gear3 == 'D':
-        KeyToHoldDown = 'DIK_NUMPAD3'
-    elif Gear4 == 'D':
-        KeyToHoldDown = 'DIK_NUMPAD4'
-    elif Gear5 == 'D':
-        KeyToHoldDown = 'DIK_NUMPAD5'
-    elif Gear6 == 'D':
-        KeyToHoldDown = 'DIK_NUMPAD7'
-    elif Gear7 == 'D':
-        KeyToHoldDown = 'DIK_NUMPAD6'
-    elif Gear8 == 'D':
-        KeyToHoldDown = 'DIK_NUMPAD8'
-    elif GearR == 'D':
-        KeyToHoldDown = 'DIK_NUMPAD9'
-    else:
-        KeyToHoldDown = neutralButton
-
-    if KeyToHoldDown == KeyToHoldDownPrev:  # The button is already down (or no button is pressed).
-        return
-
-    if KeyToHoldDown == neutralButton:
-            gearStateMachine(gearDeselect)
-    else:
-            gearStateMachine(gearSelect)
-
-    # Otherwise, release the previous key and press down the new key:
-
-    if KeyToHoldDownPrev:   # There is a previous key to release.
-         directInputKeySend.ReleaseKey(KeyToHoldDownPrev)  # Release it.
-    return
 
 #############################################################
 
@@ -404,13 +314,11 @@ def main():
   config_o = Config()
   debug = config_o.get('miscellaneous', 'debug')
   if not debug: debug = 0
-  sharedMemory = config_o.get('miscellaneous', 'shared memory')
   graunchWav = config_o.get('miscellaneous', 'wav file')
   mockInput = config_o.get('miscellaneous', 'mock input')
   reshift = config_o.get('miscellaneous', 'reshift') == 1
 
   ClutchEngaged = config_o.get('clutch', 'bite point')
-  ReverseClutchAxis = config_o.get('clutch', 'reversed')
 
   neutralButton = config_o.get('miscellaneous', 'neutral button')
   ignitionButton = config_o.get('miscellaneous', 'ignition button')
@@ -436,66 +344,18 @@ def main():
 
   graunch_o = graunch()
 
-#############################################################
-  if sharedMemory == 0:
-    print(versionStr, versionDate)
-    Shifter1 = config_o.get('shifter', '1st gear')
-    Shifter2 = config_o.get('shifter', '2nd gear')
-    Shifter3 = config_o.get('shifter', '3rd gear')
-    Shifter4 = config_o.get('shifter', '4th gear')
-    Shifter5 = config_o.get('shifter', '5th gear')
-    Shifter6 = config_o.get('shifter', '6th gear')
-    Shifter7 = config_o.get('shifter', '7th gear')
-    Shifter8 = config_o.get('shifter', '8th gear')
-    ShifterR = config_o.get('shifter', 'reverse')
-
-    print(instructions)
-
-    from wheel import Controller
-
-    shifterController_o = Controller()
-    shifterControllerName = config_o.get('shifter', 'controller')
-    shifterController_o.selectController(shifterControllerName)
-    clutchController_o = Controller()
-    clutchControllerName = config_o.get('clutch', 'controller')
-    clutchController_o.selectController(clutchControllerName)
-    clutchAxis = config_o.get('clutch', 'axis')
-
-    if shifterController_o.error:
-      print(shifterController_o.error_string)
-      quit(80)
-    if clutchController_o.error:
-      print(clutchController_o.error_string)
-      quit(81)
-
-    if len(shifterControllerName) < 3:
-      print('Shifter Controller "%s" not valid.  Please run Configurer.exe again.' % shifterControllerName)
-      quit(90)
-    if len(clutchControllerName) < 3:
-      print('Clutch Controller "%s" not valid.  Please run Configurer.exe again.' % clutchControllerName)
-      quit(91)
-
-    print('Ready for shifts on "%s"\nusing clutch on "%s".' %
-         (shifterControllerName,clutchControllerName))
-
-    if TestMode == False:
-        #SetTimer(WatchClutch, 10)
-        shifterController_o.run(WatchClutchAndShifter)
-    else:
-        SetTimer(ShowButtons, 100)
-    return 'OK', None
 
 #############################################################
-  else: # Using shared memory, reading clutch state and gear selected direct from rF2
-    controls_o = Controls(debug=debug,mocking=mockInput)
-    controls_o.run(memoryMapCallback)
-    # mockInput: testing using the simple GUI to poke inputs into the memory map
-    # otherwise just use the GUI slightly differently
-    root = gui(mocking=mockInput,
-               instructions=instructions,
-               graunch_o=graunch_o,
-               controls_o=controls_o)
-    return root, controls_o
+  # Using shared memory, reading clutch state and gear selected direct from rF2
+  controls_o = Controls(debug=debug,mocking=mockInput)
+  controls_o.run(memoryMapCallback)
+  # mockInput: testing using the simple GUI to poke inputs into the memory map
+  # otherwise just use the GUI slightly differently
+  root = gui(mocking=mockInput,
+              instructions=instructions,
+              graunch_o=graunch_o,
+              controls_o=controls_o)
+  return root, controls_o
 #############################################################
 
 if __name__ == "__main__":

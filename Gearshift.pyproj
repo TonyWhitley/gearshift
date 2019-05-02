@@ -46,9 +46,12 @@
     <Compile Include="scheduler.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="sharedMemoryAPI.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Tests\test_Gearshift.py" />
     <Compile Include="Tests\test_MemoryMapInputs.py" />
-    <Compile Include="Tests\test_Mmap_for_DSPS_V22.py" />
+    <Compile Include="Tests\test_sharedMemoryAPI.py" />
     <Compile Include="Tests\test_mockMemoryMap.py">
       <SubType>Code</SubType>
     </Compile>

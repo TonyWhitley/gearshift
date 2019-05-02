@@ -21,9 +21,9 @@ import sys
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 52 # The git commit count
+BUILD_REVISION = 44 # The git commit count
 versionStr = 'gearshift V2.3.%d' % BUILD_REVISION
-versionDate = '2019-05-02'
+versionDate = '2019-04-28'
 
 credits = "Reads the clutch and shifter from rF2 using k3nny's Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -40,6 +40,7 @@ import directInputKeySend
 
 from memoryMapInputs import Controls
 
+#ForwardGears = 6            # Plus reverse
 # Main config variables, loaded from gearshift.ini
 ReverseClutchAxis = False   # If True then the clutch input goes from 100 (down) to 0 (up)
 TestMode       =    False   # If True then show shifter and clutch operation
@@ -60,8 +61,21 @@ reshift =           True    # If True then neutral has to be selected before
 global debug
 debug           =   0       # 0, 1, 2 or 3
 sharedMemory    =   1
+#AutoRepeat     =   0
 neutralButton   =   None  # The key used to force neutral, whatever the shifter says
+shifterController_o = None
+clutchController_o = None
+clutchAxis = None
 graunchWav = None
+Shifter1 = None
+Shifter2 = None
+Shifter3 = None
+Shifter4 = None
+Shifter5 = None
+Shifter6 = None
+Shifter7 = None
+Shifter8 = None
+ShifterR = None
 
 # Gear change events
 clutchDisengage         = 'clutchDisengage'
@@ -76,6 +90,7 @@ gearState = 'neutral' # TBD
 
 ClutchPrev = 2  # Active states are 0 and 1 so 2 is "unknown"
 KeyToHoldDown = 0
+Delete = -1  # delete timer
 graunch_o = None
 
 #################################################################################
@@ -118,7 +133,6 @@ class graunch:
   def graunchStart(self):
         # Start the graunch noise and sending "Neutral"
         # Start the noise
-        global graunchWav
         SoundPlay(graunchWav)
         self.graunching = True
         self.graunch2()
@@ -169,8 +183,6 @@ class graunch:
 
 def gearStateMachine(event):
     global gearState 
-    global graunch_o
-    global debug
 
     # Gear change states
     neutral                = 'neutral'
@@ -300,7 +312,7 @@ def gearStateMachine(event):
     else:
            msgBox('Bad gearStateMachine() state gearState')
 
-    if gearState != graunching and gearState != neutralKeySent:
+    if gearState != graunching:
         graunch_o.graunchStop()   # belt and braces - sometimes it gets stuck.
 
 
@@ -365,6 +377,8 @@ def WatchClutchAndShifter():
         KeyToHoldDown = neutralButton
 
     if KeyToHoldDown == KeyToHoldDownPrev:  # The button is already down (or no button is pressed).
+        #if AutoRepeat && KeyToHoldDown
+        #   Send, KeyToHoldDown down  # Auto-repeat the keystroke.
         return
 
     if KeyToHoldDown == neutralButton:
@@ -373,6 +387,7 @@ def WatchClutchAndShifter():
             gearStateMachine(gearSelect)
 
     # Otherwise, release the previous key and press down the new key:
+    # AHK only  SetKeyDelay = -1  # Avoid delays between keystrokes.
 
     if KeyToHoldDownPrev:   # There is a previous key to release.
          directInputKeySend.ReleaseKey(KeyToHoldDownPrev)  # Release it.
@@ -397,9 +412,7 @@ def ShowButtons():
 global neutralButtonKeycode
 
 def main():
-  global graunch_o
-  global debug
-  global graunchWav
+  #global neutralButtonKeycode
 
   config_o = Config()
   debug = config_o.get('miscellaneous', 'debug')
@@ -483,7 +496,7 @@ def main():
         shifterController_o.run(WatchClutchAndShifter)
     else:
         SetTimer(ShowButtons, 100)
-    return 'OK', None
+    return 'OK'
 
 #############################################################
   else: # Using shared memory, reading clutch state and gear selected direct from rF2
@@ -495,11 +508,11 @@ def main():
                instructions=instructions,
                graunch_o=graunch_o,
                controls_o=controls_o)
-    return root, controls_o
+    controls_o.stop()
+    return root
 #############################################################
 
 if __name__ == "__main__":
-  root, controls_o = main()
+  root = main()
   if root != 'OK':
     root.mainloop()
-    controls_o.stop()

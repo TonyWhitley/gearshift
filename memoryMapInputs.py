@@ -5,17 +5,21 @@
 
 from scheduler import MyThread
 
-from Mmap_for_DSPS_V22 import SimInfo, Cbytestring2Python
+from sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
 from mockMemoryMap import gui
 
 tick_interval = 0.1 # seconds
 _timestamp = 0
 
 class Controls:
+  """
+  Monitor the gears, clutch etc. in the shared memory.
+  Send events to callback when there are changes
+  """
   def __init__(self, debug=0, mocking=False):
     self.debug = debug
     self.mocking=mocking
-    self.info = SimInfo()
+    self.info = SimInfoAPI()
     self._SMactive = False
     if self.debug > 5:
       self.clutchState = 0
@@ -94,6 +98,7 @@ class Controls:
     return ret
 
   def SMactive(self):
+    """ Gearshift state machine is active """
     return self._SMactive
 
   def getMaxRevs(self):
@@ -103,7 +108,8 @@ class Controls:
     return self.info.playersVehicleTelemetry().mMaxGears
 
   def getDriverType(self):
-    return self.info.playersVehicleScoring().mControl  # who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
+    # Who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
+    return self.info.playersVehicleScoring().mControl
 
   def run(self, callback):
     """ Event loop """
@@ -112,26 +118,25 @@ class Controls:
     self.thread.start()
 
   def stop(self):
+    """ Stop the event loop """
     self.thread.stop()
 
-  def SMactive(self):
-    return True
-
-def callback(clutchEvent=None, gearEvent=None, stopEvent=None):
+def mock_callback(clutchEvent=None, gearEvent=None, stopEvent=None):
+    # Mock stub
     if clutchEvent or gearEvent or stopEvent:
       clutch = controls_o.clutchState
       gear   = controls_o.currentGear
       driver = 'Max Snell'
       print('Driver %s, Gear: %d, Clutch position: %d' % (driver, gear, clutch))
 
-def main():
+def test_main():
     class graunch:  #dummy
       def isGraunching(self):
         return False
 
     graunch_o = graunch()
     controls_o = Controls(mocking=True)
-    controls_o.run(callback)
+    controls_o.run(mock_callback)
     controls_o.monitor()  # show initial state
     root = gui(10000, 
         6,
@@ -143,5 +148,5 @@ def main():
 
 
 if __name__ == '__main__':
-   root = main()
-   root.mainloop() # having that separate allows for unit testing main()
+   root = test_main()
+   root.mainloop() # having that separate allows for unit testing test_main()

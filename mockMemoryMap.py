@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import font, ttk, messagebox
 from time import sleep
 
-from Mmap_for_DSPS_V22 import SimInfo, Cbytestring2Python
+from sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
 
 #fontBold = font.Font(family='Helvetica', size=8, weight='bold', slant='italic')
 
@@ -22,7 +22,7 @@ class Gui:
   def __init__(self, parentFrame, maxRevs, maxFwdGears=6):
     """ Put this into the parent frame """
     self.parentFrame = parentFrame
-    self.info = SimInfo()
+    self.info = SimInfoAPI()
     #clutch = self.info.playersVehicleTelemetry().mUnfilteredClutch') # 1.0 clutch down, 0 clutch up
     #gear  = self.info.playersVehicleTelemetry().mGear')  # -1 to 6
 
@@ -356,7 +356,7 @@ def gui(maxRevs=10000, maxFwdGears=6, mocking=False, instructions='', graunch_o=
   return root
   pass
 
-def main():
+def test_main():
   class graunch:  #dummy
     def isGraunching(self):
       return False
@@ -372,5 +372,5 @@ def main():
 
 if __name__ == '__main__':
   # To run this frame by itself for development
-  root = main()
-  root.mainloop() # having that separate allows for unit testing main()
+  root = test_main()
+  root.mainloop() # having that separate allows for unit testing test_main()

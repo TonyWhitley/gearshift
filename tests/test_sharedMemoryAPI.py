@@ -1,9 +1,9 @@
 import unittest
 
-from memoryMapInputs import test_main
+from sharedMemoryAPI import test_main
 
-class Test_memoryMapInputs(unittest.TestCase):
-  def test_memoryMapInputs_main_runs(self):
+class Test_sharedMemoryAPI(unittest.TestCase):
+  def test_sharedMemoryAPI_main_runs(self):
     # Preliminary test - does main run?
     root = test_main()
     assert root != None

@@ -68,6 +68,8 @@ gearState = 'neutral' # TBD
 
 ClutchPrev = 2  # Active states are 0 and 1 so 2 is "unknown"
 
+global neutralButtonKeycode
+
 #################################################################################
 # AHK replacement fns
 def SetTimer(callback, mS: int) -> Timer:
@@ -354,8 +356,6 @@ def memoryMapCallback(clutchEvent: int=None, gearEvent: int=None, stopEvent: boo
 def ShowButtons() -> None:
   pass
 
-global neutralButtonKeycode
-
 def main(): # -> (int, Controls):
   global graunch_o
   global debug
@@ -395,6 +395,7 @@ def main(): # -> (int, Controls):
   return controls_o, graunch_o
 
 def main_gui(controls_o, graunch_o):
+  global neutralButtonKeycode
   instructions = 'If gear selection fails this program will send %s ' \
     'to the active window until you reselect a gear.\n\n' \
     'You can minimise this window now.\n' \

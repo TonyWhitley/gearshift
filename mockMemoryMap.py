@@ -1,7 +1,7 @@
 # Simple GUI to poke inputs into the memory map
 
 import tkinter as tk
-from tkinter import font, ttk, messagebox
+from tkinter import font, ttk, messagebox #, PhotoImage
 from time import sleep
 
 from sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
@@ -333,6 +333,8 @@ def credits():
 def gui(maxRevs=10000, maxFwdGears=6, mocking=False, instructions='', graunch_o=None, controls_o=None):
   root = tk.Tk()
   root.title('gearshift')
+  #Worked but crashed unit tests - temp image file?  root.tk.call('wm', 'iconphoto', root._w, PhotoImage(file='resources/gearshift.png'))
+  root.iconbitmap('resources/gearshift.ico')
   menubar = tk.Menu(root)
   _m = Menu(menubar)
   root.config(menu=menubar)

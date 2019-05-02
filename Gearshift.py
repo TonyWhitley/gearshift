@@ -12,14 +12,15 @@
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 1 # The git branch commit count
+BUILD_REVISION = 2 # The git branch commit count
 versionStr = 'gearshift V3.0.%d' % BUILD_REVISION
 versionDate = '2019-05-02'
 
 credits = "Reads the clutch and shifter from rF2 using k3nny's Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
  "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n" \
- "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n"
+ "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n" \
+ "Icon made by https://www.flaticon.com/authors/those-icons"
 
 from threading import Timer
 from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC

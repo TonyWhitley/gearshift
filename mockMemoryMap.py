@@ -7,6 +7,8 @@ from time import sleep
 from sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
 
 #fontBold = font.Font(family='Helvetica', size=8, weight='bold', slant='italic')
+bg_colour = 'LightGoldenrod1'
+bg_colour = 'seashell2'
 
 GEARS = ['Reverse', 'Neutral','1','2','3','4','5','6','7','8']
 CLUTCH_DELAY = 100.0 / 1000.0   # 100 mS
@@ -35,7 +37,7 @@ class Gui:
 
     ####################################################
     # Status frame
-    tkFrame_Status = tk.LabelFrame(parentFrame, text='rFactor 2 status')
+    tkFrame_Status = tk.LabelFrame(parentFrame, text='rFactor 2 status', background=bg_colour)
     tkFrame_Status.grid(column=2, row=1, sticky='nsew', padx=self.xPadding)
 
     self._createBoolVar('rF2 running', False)
@@ -43,45 +45,56 @@ class Gui:
                                                   text='rF2 running and\nshared memory\nworking',
                                                   justify='l',
                                                   #indicatoron=0,
-                                                  variable=self.vars['rF2 running'])
+                                                  variable=self.vars['rF2 running'],
+                                                  background=bg_colour,
+                                                  selectcolor=bg_colour)
     self._tkCheckbuttons['rF2 running'].grid(sticky='w')
 
     self._createBoolVar('Track loaded', False)
     self._tkCheckbuttons['Track loaded'] = tk.Checkbutton(tkFrame_Status, 
                                                   text='Track loaded',
-                                                  variable=self.vars['Track loaded'])
+                                                  variable=self.vars['Track loaded'],
+                                                  background=bg_colour,
+                                                  selectcolor=bg_colour)
     self._tkCheckbuttons['Track loaded'].grid(sticky='w')
 
     self._createBoolVar('On track', False)
     self._tkCheckbuttons['On track'] = tk.Checkbutton(tkFrame_Status, 
                                                   text='On track',
-                                                  variable=self.vars['On track'])
+                                                  variable=self.vars['On track'],
+                                                  background=bg_colour,
+                                                  selectcolor=bg_colour)
     self._tkCheckbuttons['On track'].grid(sticky='w')
 
     self._createBoolVar('Escape pressed', False)
     self._tkCheckbuttons['Escape pressed'] = tk.Checkbutton(tkFrame_Status, 
                                                   text='Escape pressed',
-                                                  variable=self.vars['Escape pressed'])
+                                                  variable=self.vars['Escape pressed'],
+                                                  background=bg_colour,
+                                                  selectcolor=bg_colour)
     self._tkCheckbuttons['Escape pressed'].grid(sticky='w')
 
     self._createBoolVar('AI driving', False)
     self._tkCheckbuttons['AI driving'] = tk.Checkbutton(tkFrame_Status, 
                                                   text='AI driving',
-                                                  variable=self.vars['AI driving'])
+                                                  variable=self.vars['AI driving'],
+                                                  background=bg_colour,
+                                                  selectcolor=bg_colour)
     self._tkCheckbuttons['AI driving'].grid(sticky='w')
 
     self._createVar('Player', False)
     self.driverLabel = tk.Label(tkFrame_Status,
-                           text='')
+                           text='',
+                           background=bg_colour)
     self.driverLabel.grid(sticky='w')
 
     ####################################################
     self._createBoolVar('Clutch pressed', False)
-    self._createBoolVar('Auto clutch', True)
+    self._createBoolVar('Auto clutch', False)
 
     ####################################################
-    tkFrame_Gear = tk.LabelFrame(parentFrame, text='Gear', padx=self.xPadding)
-    tkFrame_Gear.grid(column=1, row=3, sticky='nsew')
+    tkFrame_Gear = tk.LabelFrame(parentFrame, text='Gear', background=bg_colour)
+    tkFrame_Gear.grid(column=1, row=3, sticky='nsew', padx=self.xPadding)
 
     self._createVar('Gear', 'Neutral')
     _gears = GEARS[:maxFwdGears+2]
@@ -90,13 +103,15 @@ class Gui:
                                                   text=gear, 
                                                   variable=self.vars['Gear'], 
                                                   value=gear,
-                                                  command=self._gearChange)
+                                                  command=self._gearChange,
+                                                  background=bg_colour,
+                                                  selectcolor=bg_colour)
       _tkRadiobuttons[gear].grid(sticky='w')
       _tkRadiobuttons[gear].update()
 
     ####################################################
-    tkFrame_Revs = tk.LabelFrame(parentFrame, text='Revs')
-    tkFrame_Revs.grid(column=2, row=1, rowspan=3, sticky='sew', padx=self.xPadding)
+    tkFrame_Revs = tk.LabelFrame(parentFrame, text='Revs', background=bg_colour)
+    tkFrame_Revs.grid(column=2, row=2, rowspan=2, sticky='nsew', padx=self.xPadding)
 
     _EngineRPMCol = 1
     self._createVar('EngineRPM', TICKOVER)
@@ -104,7 +119,8 @@ class Gui:
     tkLabel_EngineRPM = tk.Label(tkFrame_Revs, 
                                           text='Engine revs',
                                           #font=fontBold,
-                                          justify=tk.LEFT)
+                                          justify=tk.LEFT,
+                                          background=bg_colour)
     tkLabel_EngineRPM.grid(column=_EngineRPMCol, row=1, sticky='nw')
 
     tkScale_EngineRPM = tk.Scale(tkFrame_Revs, 
@@ -112,13 +128,18 @@ class Gui:
                                   to=maxRevs, 
                                   orient=tk.VERTICAL, 
                                   variable=self.vars['EngineRPM'],
-                                  command=self.EngineRPM)
-    tkScale_EngineRPM.grid(column=_EngineRPMCol, row=2, rowspan=3, sticky='ew')
+                                  borderwidth=4,
+                                  command=self.EngineRPM,
+                                  background=bg_colour,
+                                  troughcolor=bg_colour,
+                                  highlightbackground=bg_colour,  # the frame round the whole widget
+                                  highlightcolor=bg_colour)
+    tkScale_EngineRPM.grid(column=_EngineRPMCol, row=3, sticky='wns')
 
-    tkLabel_EngineRPM_0 = tk.Label(tkFrame_Revs, text='Tickover')
-    tkLabel_EngineRPM_0.grid(column=_EngineRPMCol, row=2, sticky='nw')
-    tkLabel_EngineRPM_10 = tk.Label(tkFrame_Revs, text='Rev limit')
-    tkLabel_EngineRPM_10.grid(column=_EngineRPMCol, row=4, sticky='nw')
+    tkLabel_EngineRPM_0 = tk.Label(tkFrame_Revs, text='Tickover', background=bg_colour)
+    tkLabel_EngineRPM_0.grid(column=_EngineRPMCol, row=2, sticky='ne')
+    tkLabel_EngineRPM_10 = tk.Label(tkFrame_Revs, text='Rev limit', background=bg_colour)
+    tkLabel_EngineRPM_10.grid(column=_EngineRPMCol, row=4, sticky='ne')
 
     _ClutchRPMCol = 2
     self._createVar('ClutchRPM', 0)
@@ -126,20 +147,27 @@ class Gui:
     tkLabel_ClutchRPM = tk.Label(tkFrame_Revs, 
                                           text='Gearbox Revs',
                                           #font=fontBold,
-                                          justify=tk.LEFT)
+                                          justify=tk.LEFT,
+                                          background=bg_colour)
     tkLabel_ClutchRPM.grid(column=_ClutchRPMCol, row=1, sticky='n')
     tkScale_ClutchRPM = tk.Scale(tkFrame_Revs, 
                                   from_=0, 
                                   to=maxRevs*2, 
                                   orient=tk.VERTICAL, 
                                   variable=self.vars['ClutchRPM'],
-                                  command=self.ClutchRPM)
-    tkScale_ClutchRPM.grid(column=_ClutchRPMCol, row=3, sticky='ewns')
+                                  borderwidth=4,
+                                  command=self.ClutchRPM,
+                                  background=bg_colour,
+                                  troughcolor=bg_colour,
+                                  highlightbackground=bg_colour,
+                                  highlightcolor=bg_colour)
 
-    tkLabel_ClutchRPM_10 = tk.Label(tkFrame_Revs, text='Stationary')
-    tkLabel_ClutchRPM_10.grid(column=_ClutchRPMCol, row=2, sticky='nw')
-    tkLabel_ClutchRPM_0 = tk.Label(tkFrame_Revs, text='Downshift\nover rev')
-    tkLabel_ClutchRPM_0.grid(column=_ClutchRPMCol, row=4, sticky='nw')
+    tkScale_ClutchRPM.grid(column=_ClutchRPMCol, row=3, sticky='wns')
+
+    tkLabel_ClutchRPM_10 = tk.Label(tkFrame_Revs, text='Stationary', background=bg_colour)
+    tkLabel_ClutchRPM_10.grid(column=_ClutchRPMCol, row=2, sticky='ne')
+    tkLabel_ClutchRPM_0 = tk.Label(tkFrame_Revs, text='Downshift\nover rev', background=bg_colour)
+    tkLabel_ClutchRPM_0.grid(column=_ClutchRPMCol, row=4, sticky='ne')
 
   def _createVar(self, name, value):
     self.vars[name] = tk.StringVar(name=name)
@@ -169,22 +197,28 @@ class mock(Gui):
     self.graunch_o = graunch_o
     tkLabel_Options = tk.Label(parentFrame, 
                                 text='Simple GUI to fake clutch, gear selection and revs\n'
-                                '"Auto clutch" presses and releases the clutch')
+                                '"Auto clutch" presses and releases the clutch',
+                                background=bg_colour)
     tkLabel_Options.grid(column=1, row=0, columnspan=3)
 
-    tkFrame_Clutch = tk.LabelFrame(parentFrame, text='Clutch')
+    tkFrame_Clutch = tk.LabelFrame(parentFrame, text='Clutch', background=bg_colour)
+    tkFrame_Clutch.grid_columnconfigure(1, minsize=40)
     tkFrame_Clutch.grid(column=1, row=1, sticky='nsew', padx=self.xPadding)
 
     self._tkCheckbuttons['Clutch pressed'] = tk.Checkbutton(tkFrame_Clutch, 
                                                   text='Pressed',
                                                   variable=self.vars['Clutch pressed'],
-                                                  command=self.__clutchOperation)
+                                                  command=self.__clutchOperation,
+                                                  background=bg_colour,
+                                                  selectcolor=bg_colour)
 
     self._tkCheckbuttons['Clutch pressed'].grid(sticky='w')
 
     self._tkCheckbuttons['Auto clutch'] = tk.Checkbutton(tkFrame_Clutch, 
                                                   text='Automatic',
-                                                  variable=self.vars['Auto clutch'])
+                                                  variable=self.vars['Auto clutch'],
+                                                  background=bg_colour,
+                                                  selectcolor=bg_colour)
 
     self._tkCheckbuttons['Auto clutch'].grid(sticky='w')
 
@@ -218,11 +252,13 @@ class mock(Gui):
       # if we're graunching it rF2 will set gear to Neutral
       # momentarily before putting it back in gear if it hasn't
       # been shifted to neutral
+      """
       if self.graunch_o.isGraunching():
         sleep(GRAUNCH_DELAY)
         self.info.playersVehicleTelemetry().mGear = 0
         sleep(GRAUNCH_DELAY2)
         self.info.playersVehicleTelemetry().mGear = _gear
+      """
     else: # Neutral
       self.info.playersVehicleTelemetry().mGear = _gear 
 
@@ -239,35 +275,47 @@ class live(Gui):
     self._createBoolVar('Graunching', False)
     self._createVar('Clutch', 0)
 
-    tkFrame_Instructions = tk.LabelFrame(parentFrame)
+    tkFrame_Instructions = tk.LabelFrame(parentFrame, background=bg_colour)
     tkFrame_Instructions.grid(column=1, row=1, sticky='nsew', padx=self.xPadding)
     tkLabel_instructions = tk.Label(tkFrame_Instructions, 
                                     justify='l',
                                     wraplength=200,
-                                    text=instructions)
+                                    text=instructions,
+                                    background=bg_colour)
     tkLabel_instructions.grid(column=1, row=0, sticky='ew', padx=self.xPadding, columnspan=2)
 
     tkLabel_Clutch = tk.Label(tkFrame_Instructions, 
                                           text='Clutch engaged',
                                           #font=fontBold,
-                                          justify=tk.LEFT)
+                                          justify=tk.LEFT,
+                                          background=bg_colour)
     tkLabel_Clutch.grid(column=1, row=1, sticky='e')
     tkScale_Clutch = tk.Scale(tkFrame_Instructions, 
                               from_=0, 
                               to=100, 
                               orient=tk.HORIZONTAL, 
                               showvalue=0,
-                              variable=self.vars['Clutch'])
+                              variable=self.vars['Clutch'],
+                              borderwidth=4,
+                              command=self.EngineRPM,
+                              background=bg_colour,
+                              troughcolor=bg_colour,
+                              highlightbackground=bg_colour,  # the frame round the whole widget
+                              highlightcolor=bg_colour)
     tkScale_Clutch.grid(column=2, row=1, sticky='wns')
 
     self._tkCheckbuttons['SMactive'] = tk.Checkbutton(tkFrame_Instructions, 
                                                       text='SM active',
-                                                      variable=self.vars['SMactive'])
+                                                      variable=self.vars['SMactive'],
+                                                      background=bg_colour,
+                                                      selectcolor=bg_colour)
     self._tkCheckbuttons['SMactive'].grid(column=1, row=2, sticky='sw', padx=self.xPadding)
 
     self._tkCheckbuttons['Graunching'] = tk.Checkbutton(tkFrame_Instructions, 
                                                         text='Graunching',
-                                                        variable=self.vars['Graunching'])
+                                                        variable=self.vars['Graunching'],
+                                                        background=bg_colour,
+                                                        selectcolor=bg_colour)
     self._tkCheckbuttons['Graunching'].grid(column=2, row=2, sticky='sw', padx=self.xPadding)
   
     # Kick off the tick
@@ -311,7 +359,7 @@ class Menu:
   def __init__(self, 
                menubar, 
                menu2tab=None):
-    helpmenu = tk.Menu(menubar, tearoff=0)
+    helpmenu = tk.Menu(menubar, tearoff=0, background=bg_colour, activebackground=bg_colour)
     helpmenu.add_command(label="Credits", command=credits)
     helpmenu.add_command(label="About", command=about)
     menubar.add_cascade(label="Help", menu=helpmenu)
@@ -333,13 +381,15 @@ def credits():
 def gui(maxRevs=10000, maxFwdGears=6, mocking=False, instructions='', graunch_o=None, controls_o=None):
   root = tk.Tk()
   root.title('gearshift')
-  #Worked but crashed unit tests - temp image file?  root.tk.call('wm', 'iconphoto', root._w, PhotoImage(file='resources/gearshift.png'))
+  root.configure(background=bg_colour)
+  #Worked but crashed unit tests - temp image file?  
+  #root.tk.call('wm', 'iconphoto', root._w, PhotoImage(file='resources/gearshift.png'))
   root.iconbitmap('resources/gearshift.ico')
-  menubar = tk.Menu(root)
+  menubar = tk.Menu(root, background=bg_colour, activebackground=bg_colour)
   _m = Menu(menubar)
-  root.config(menu=menubar)
+  root.config(menu=menubar, background=bg_colour)
 
-  mockMemoryMap = ttk.Frame(root, width=1200, height=1200, relief='sunken', borderwidth=5)
+  mockMemoryMap = tk.Frame(root, width=1200, height=1200, relief='sunken', borderwidth=5, background=bg_colour)
   mockMemoryMap.grid()
     
   if mocking:

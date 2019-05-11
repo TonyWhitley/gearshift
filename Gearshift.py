@@ -12,9 +12,9 @@
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 2 # The git branch commit count
+BUILD_REVISION = 3 # The git branch commit count
 versionStr = 'gearshift V3.0.%d' % BUILD_REVISION
-versionDate = '2019-05-02'
+versionDate = '2019-05-11'
 
 credits = "Reads the clutch and shifter from rF2 using k3nny's Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -71,6 +71,10 @@ def SetTimer(callback, mS):
     timer.start()
   else: 
     pass # TBD delete timer?
+  return timer
+
+def StopTimer(timer):
+  timer.cancel()
 
 def SoundPlay(soundfile):
   PlaySound(soundfile, SND_FILENAME|SND_LOOP|SND_ASYNC)
@@ -92,6 +96,7 @@ def quit(errorCode):
 class graunch:
   def __init__(self):
         self.graunching = False
+        self.t3 = None
   def graunchStart(self):
         # Start the graunch noise and sending "Neutral"
         # Start the noise
@@ -107,6 +112,7 @@ class graunch:
         if self.graunching:
           SoundStop()  # stop the noise
         self.graunching = False
+        self.stopT3()
         self.graunch1()
 
 
@@ -121,7 +127,7 @@ class graunch:
       if self.graunching:      
         # Send the "Neutral" key press
         directInputKeySend.PressKey(neutralButton)
-        SetTimer(self.graunch3, 3000)
+        self.t3 = SetTimer(self.graunch3, 300)
         if debug >= 1:
             directInputKeySend.PressReleaseKey('DIK_G')
 
@@ -134,6 +140,11 @@ class graunch:
       expires then player has moved shifter to neutral
       """
       gearStateMachine(graunchTimeout)
+
+  def stopT3(self):
+    if self.t3:
+      StopTimer(self.t3)
+      self.t3 = None
 
   def isGraunching(self):
     return self.graunching
@@ -154,7 +165,7 @@ def gearStateMachine(event):
     inGear                 = 'inGear'
     graunching             = 'graunching'
     graunchingClutchDown   = 'graunchingClutchDown'
-    neutralKeySent         = 'neutralKeySent'
+    graunchingNeutral      = 'graunchingNeutral'
 
     if debug >= 3:
         msgBox('gearState %s event %s' % (gearState, event))
@@ -240,13 +251,14 @@ def gearStateMachine(event):
         elif event == clutchEngage:
                 graunch_o.graunchStart()   # graunch again
         elif event == gearDeselect:
-                gearState = neutralKeySent
+                gearState = graunchingNeutral
+                graunch_o.graunch3()
         elif event == gearSelect:
                 graunch_o.graunchStop()
                 graunch_o.graunchStart()   # graunch again
                 pass
 
-    elif gearState == neutralKeySent:
+    elif gearState == graunchingNeutral:
         # rF2 will have put it into neutral but if shifter
         # still in gear it will have put it back in gear again
         if event == gearSelect:
@@ -268,8 +280,15 @@ def gearStateMachine(event):
     else:
            msgBox('Bad gearStateMachine() state gearState')
 
-    if gearState != graunching and gearState != neutralKeySent:
+    if gearState != graunching and gearState != graunchingNeutral:
         graunch_o.graunchStop()   # belt and braces - sometimes it gets stuck.
+
+    return gearState # for unit testing
+
+def set_graunch_o(_graunch_o):
+    global graunch_o
+    graunch_o = _graunch_o
+
 
 
 

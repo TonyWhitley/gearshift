@@ -56,10 +56,6 @@ class Config:
       self.config.read(configFileName)
     else:
       self.write()
-      if self.get('miscellaneous', 'shared memory') == 0:
-        # then configure the controller(s)
-        from Configurer import main
-        main()
       self.config.read(configFileName)
 
     if self.get('miscellaneous', 'shared memory'):

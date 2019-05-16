@@ -42,6 +42,12 @@ class Gui:
     tkFrame_Status = tk.LabelFrame(parentFrame, text='rFactor 2 status', background=bg_colour)
     tkFrame_Status.grid(column=2, row=1, sticky='nsew', padx=self.xPadding)
 
+    _lbl = tk.Label(tkFrame_Status, 
+             text=self.info.versionCheckMsg,
+             justify='l',
+             background=bg_colour)
+    _lbl.grid()
+
     self._createBoolVar('rF2 running', False)
     self._tkCheckbuttons['rF2 running'] = tk.Checkbutton(tkFrame_Status,
                                                   text='rF2 running and\nshared memory\nworking',

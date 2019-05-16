@@ -375,7 +375,7 @@ class rF2Extended(ctypes.Structure):
     _fields_ = [
         ('mVersionUpdateBegin', ctypes.c_uint),
         ('mVersionUpdateEnd', ctypes.c_uint),
-        ('mVersion', ctypes.c_ubyte*8),
+        ('mVersion', ctypes.c_ubyte*12),
         ('is64bit', ctypes.c_ubyte),
         ('mPhysics', rF2PhysicsOptions),
         ('mTrackedDamages', rF2TrackedDamage*MAX_MAPPED_IDS),

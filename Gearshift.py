@@ -96,58 +96,64 @@ def quit(errorCode):
 class graunch:
   def __init__(self):
         self.graunching = False
-        self.t3 = None
+        self.neutralTimer = None
+
   def graunchStart(self):
         # Start the graunch noise and sending "Neutral"
         # Start the noise
         global graunchWav
         SoundPlay(graunchWav)
         self.graunching = True
-        self.graunch2()
+        self.__sendNeutralButton()
         if debug >= 2:
             msgBox('GRAUNCH!')
-
-
+            
   def graunchStop(self):
         if self.graunching:
           SoundStop()  # stop the noise
         self.graunching = False
-        self.stopT3()
-        self.graunch1()
+        self.stopNeutralTimeout()
+        self.__releaseNeutralButton()
 
+  def stopNeutralTimeout(self):
+    """ 
+    We were waiting to see if  the effect of the "Neutral" key 
+    would persist but rF2 has selected the gear again
+    """
+    if self.neutralTimer:
+      StopTimer(self.neutralTimer)
+      self.neutralTimer = None
 
-  def graunch1(self):
-        # Send the "Neutral" key release
-        directInputKeySend.ReleaseKey(neutralButton)
-        if self.graunching:
-          SetTimer(self.graunch2, 20)
+  def isGraunching(self):
+    return self.graunching
 
-
-  def graunch2(self):
+  # Internal functions
+  def __sendNeutralButton(self):
       if self.graunching:      
         # Send the "Neutral" key press
         directInputKeySend.PressKey(neutralButton)
-        self.t3 = SetTimer(self.graunch3, 300)
+        # If rF2 doesn't bounce it back into gear before this
+        # timer times out then the driver has moved the stick
+        # back to neutral
+        self.neutralTimer = SetTimer(self.__neutralTimeout, 300)
         if debug >= 1:
             directInputKeySend.PressReleaseKey('DIK_G')
 
-  def graunch3(self):
+  def __releaseNeutralButton(self):
+        # Send the "Neutral" key release
+        directInputKeySend.ReleaseKey(neutralButton)
+        if self.graunching:
+          SetTimer(self.__sendNeutralButton, 209)
+
+  def __neutralTimeout(self):
       """ Shared memory.
       Neutral key causes gearDeselect event but if player doesn't move shifter
       to neutral then rF2 will quickly report that it's in gear again,
       causing a gearSelect event.
-      If SM is still in neutral (gearSelect hasn't happened) when this timer 
-      expires then player has moved shifter to neutral
+      If SM is still in neutral (gearSelect hasn't happened) when 
+      neutralTimer expires then player has moved shifter to neutral
       """
       gearStateMachine(graunchTimeout)
-
-  def stopT3(self):
-    if self.t3:
-      StopTimer(self.t3)
-      self.t3 = None
-
-  def isGraunching(self):
-    return self.graunching
 
 
 ######################################################################
@@ -251,18 +257,16 @@ def gearStateMachine(event):
         elif event == clutchEngage:
                 graunch_o.graunchStart()   # graunch again
         elif event == gearDeselect:
+                # Neutral key press received
                 gearState = graunchingNeutral
-                graunch_o.graunch3()
-        elif event == gearSelect:
-                graunch_o.graunchStop()
-                graunch_o.graunchStart()   # graunch again
-                pass
+                #graunch_o.__neutralTimeout()
 
     elif gearState == graunchingNeutral:
         # rF2 will have put it into neutral but if shifter
         # still in gear it will have put it back in gear again
         if event == gearSelect:
                 gearState = graunching
+                graunch_o.stopNeutralTimeout()
         elif event == graunchTimeout:
                 # timed out and still not in gear, player has
                 # shifted to neutral

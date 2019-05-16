@@ -43,6 +43,7 @@
     <Compile Include="mockMemoryMap.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="rF2data.py" />
     <Compile Include="scheduler.py">
       <SubType>Code</SubType>
     </Compile>

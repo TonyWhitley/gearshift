@@ -20,6 +20,8 @@ class Controls:
     self.debug = debug
     self.mocking=mocking
     self.info = SimInfoAPI()
+    if self.mocking:
+      self.info.playersVehicleScoring().mControl = 0 # 0=local player
     self._SMactive = False
     if self.debug > 5:
       self.clutchState = 0

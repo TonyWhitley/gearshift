@@ -1,14 +1,62 @@
 # Inherit k3nny's Python mapping of The Iron Wolf's rF2 Shared Memory Tools
 # and add access functions to it.
-import Mmap_for_DSPS_V22
+import rF2data
 
-class SimInfoAPI(Mmap_for_DSPS_V22.SimInfo):
+class SimInfoAPI(rF2data.SimInfo):
   """
   API for rF2 shared memory
   """
   def __init__(self):
-    Mmap_for_DSPS_V22.SimInfo.__init__(self)
+    rF2data.SimInfo.__init__(self)
     self.player = 0
+    self.minimumSupportedVersionParts = [ '3', '6', '0', '0' ]
+    self.versionCheckMsg = self.versionCheck()
+
+  def versionCheck(self):
+    """
+    Lifted from https://gitlab.com/mr_belowski/CrewChiefV4/blob/master/CrewChiefV4/RF2/RF2GameStateMapper.cs
+    and translated.
+    """
+    versionStr = Cbytestring2Python(self.Rf2Ext.mVersion)
+    msg = ''
+
+    versionParts = versionStr.split('.')
+    if len(versionParts) != 4:
+        msg = "Corrupt or leaked rFactor 2 Shared Memory.  Version string: " + versionStr
+        return msg
+
+    smVer = 0
+    minVer = 0
+    partFactor = 1
+    for i in range(3, 0, -1):
+        versionPart = 0
+        try:
+          versionPart = int(versionParts[i])
+        except:
+            msg = "Corrupt or leaked rFactor 2 Shared Memory version.  Version string: " + versionStr
+            return msg
+
+        smVer += (versionPart * partFactor)
+        minVer += (int(self.minimumSupportedVersionParts[i]) * partFactor)
+        partFactor *= 100
+
+    if self.Rf2Ext.is64bit == 0:
+        msg = "Only 64bit version of rFactor 2 is supported."
+    elif smVer < minVer:
+        minVerStr = ".".join(self.minimumSupportedVersionParts)
+        msg = "Unsupported rFactor 2 Shared Memory version: " \
+            + versionStr \
+            + "  Minimum supported version is: " \
+            + minVerStr \
+            + "  Please update rFactor2SharedMemoryMapPlugin64.dll"
+    else:
+        msg = "rFactor 2 Shared Memory\nversion: " + versionStr + " 64bit."
+            #tbd + (shared.extended.mDirectMemoryAccessEnabled != 0 && shared.extended.mSCRPluginEnabled != 0 ? ("  Stock Car Rules plugin enabled. (DFT:" + shared.extended.mSCRPluginDoubleFileType + ")")  :"") \
+            #tbd + (shared.extended.mDirectMemoryAccessEnabled != 0 ? "  DMA enabled." : "")
+
+    # Only verify once.
+    return msg
+
 
   ###########################################################
   # Access functions
@@ -82,6 +130,7 @@ def Cbytestring2Python(bytestring):
 def test_main():
     # Example usage
     info = SimInfoAPI()
+    print(info.versionCheckMsg)
     clutch = info.playersVehicleTelemetry().mUnfilteredClutch # 1.0 clutch down, 0 clutch up
     info.playersVehicleTelemetry().mGear = 1
     gear   = info.playersVehicleTelemetry().mGear  # -1 to 6
@@ -98,7 +147,7 @@ def test_main():
     vehicleName = Cbytestring2Python(info.playersVehicleScoring().mVehicleName)
     trackName = Cbytestring2Python(info.Rf2Scor.mScoringInfo.mTrackName)
     vehicleClass = Cbytestring2Python(info.playersVehicleScoring().mVehicleClass)
-    
+
     started = info.Rf2Ext.mSessionStarted
     realtime = info.Rf2Ext.mInRealtimeFC
     ai = info.isAiDriving()
@@ -118,7 +167,7 @@ def test_main():
       print('Track is not loaded')
 
     if info.isOnTrack():
-      driver = Cbytestring2Python(playersVehicleScoring().mDriverName)
+      driver = Cbytestring2Python(info.playersVehicleScoring().mDriverName)
       print('Driver "%s" is on track' % driver)
     else:
       print('Driver is not on track')
@@ -127,3 +176,4 @@ def test_main():
 
 if __name__ == '__main__':
   test_main()
+

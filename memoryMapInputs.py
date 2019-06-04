@@ -1,14 +1,14 @@
-# Reading the clutch and shifter from rF2 using k3nny's Python 
+# Reading the clutch and shifter from rF2 using Python 
 # mapping of The Iron Wolf's rF2 Shared Memory Tools
 # https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin
-# https://forum.studio-397.com/index.php?members/k3nny.35143/
 
 from scheduler import MyThread
 
 from sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
 from mockMemoryMap import gui
 
-tick_interval = 0.1 # seconds
+SuccessiveNeutral = -2
+tick_interval = 0.05 # seconds
 _timestamp = 0
 
 class Controls:
@@ -57,6 +57,9 @@ class Controls:
           print('[MemoryMapped] gear: %s' % self.currentGear)
         #driver = Cbytestring2Python(self.playersVehicleScoring().mDriverName)
         self.callback(gearEvent=self.currentGear)
+      elif self.currentGear == 0:
+        # Successively read in neutral
+        self.callback(gearEvent=SuccessiveNeutral)
 
       if self.clutchState != self.__readClutch():
         self.clutchState   = self.__readClutch()

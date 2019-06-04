@@ -345,3 +345,4 @@ ASALocalRun/
 .mypy_cache/
 .vscode/settings.json
 .pylintrc
+/gitRev.bat

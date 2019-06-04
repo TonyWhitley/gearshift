@@ -12,13 +12,14 @@
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 3 # The git branch commit count
+BUILD_REVISION = 65 # The git branch commit count
 versionStr = 'gearshift V3.0.%d' % BUILD_REVISION
-versionDate = '2019-05-11'
+versionDate = '2019-06-04'
 
-credits = "Reads the clutch and shifter from rF2 using k3nny's Python\n" \
+credits = "Reads the clutch and shifter from rF2 using a Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
  "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n" \
+ "Original Python mapping implented by\n" \
  "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n" \
  "Icon made by https://www.flaticon.com/authors/those-icons"
 
@@ -29,6 +30,8 @@ from configIni import Config
 import directInputKeySend
 
 from memoryMapInputs import Controls
+
+from memoryMapInputs import SuccessiveNeutral
 
 # Main config variables, loaded from gearshift.ini
 mockInput      =    False   # If True then use mock input
@@ -123,12 +126,14 @@ class graunch:
     if self.neutralTimer:
       StopTimer(self.neutralTimer)
       self.neutralTimer = None
+      self.__releaseNeutralButton()
 
   def isGraunching(self):
     return self.graunching
 
   # Internal functions
   def __sendNeutralButton(self):
+      global neutralButton
       if self.graunching:      
         # Send the "Neutral" key press
         directInputKeySend.PressKey(neutralButton)
@@ -138,12 +143,14 @@ class graunch:
         self.neutralTimer = SetTimer(self.__neutralTimeout, 300)
         if debug >= 1:
             directInputKeySend.PressReleaseKey('DIK_G')
+        SetTimer(self.__releaseNeutralButton, 20)
 
   def __releaseNeutralButton(self):
         # Send the "Neutral" key release
+        global neutralButton
         directInputKeySend.ReleaseKey(neutralButton)
         if self.graunching:
-          SetTimer(self.__sendNeutralButton, 209)
+          SetTimer(self.__sendNeutralButton, 20)
 
   def __neutralTimeout(self):
       """ Shared memory.
@@ -153,7 +160,9 @@ class graunch:
       If SM is still in neutral (gearSelect hasn't happened) when 
       neutralTimer expires then player has moved shifter to neutral
       """
-      gearStateMachine(graunchTimeout)
+      #self.__sendNeutralButton()
+      pass
+      #gearStateMachine(graunchTimeout)
 
 
 ######################################################################
@@ -184,11 +193,14 @@ def gearStateMachine(event):
       pass
     elif event == gearDeselect:
       pass
+    elif event == SuccessiveNeutral:
+      pass
     elif event == graunchTimeout:
       pass
     elif event == smStop:
       graunch_o.graunchStop()
       gearState = neutral
+      pass
     else:
             msgBox('gearStateMachine() invalid event %s' % event)
 
@@ -200,8 +212,8 @@ def gearStateMachine(event):
         elif event == gearSelect:
                 graunch_o.graunchStart()
                 gearState = graunching
-        elif event == graunchTimeout:
-                graunch_o.graunchStop()
+        #elif event == graunchTimeout:
+        #        graunch_o.graunchStop()
 
     elif gearState == clutchDown:
         if event == gearSelect:
@@ -258,6 +270,7 @@ def gearStateMachine(event):
                 graunch_o.graunchStart()   # graunch again
         elif event == gearDeselect:
                 # Neutral key press received
+				        """
                 gearState = graunchingNeutral
                 #graunch_o.__neutralTimeout()
 
@@ -267,17 +280,25 @@ def gearStateMachine(event):
         if event == gearSelect:
                 gearState = graunching
                 graunch_o.stopNeutralTimeout()
-        elif event == graunchTimeout:
+        elif event == SuccessiveNeutral:
+                # Neutral read twice
+                # was graunchTimeout:
                 # timed out and still not in gear, player has
                 # shifted to neutral
                 gearState = neutral
                 graunch_o.graunchStop()
+                """
+				        pass
+
+        elif event == gearSelect:
+                graunch_o.graunchStop()
+                graunch_o.graunchStart()   # graunch again
 
     elif gearState == graunchingClutchDown:
         if event == clutchEngage:
                 graunch_o.graunchStart()   # graunch again
                 gearState = graunching
-        elif event == gearDeselect:
+        elif event == gearDeselect or event == gearSelect:
                 gearState = clutchDown
                 graunch_o.graunchStop()
 
@@ -285,7 +306,8 @@ def gearStateMachine(event):
            msgBox('Bad gearStateMachine() state gearState')
 
     if gearState != graunching and gearState != graunchingNeutral:
-        graunch_o.graunchStop()   # belt and braces - sometimes it gets stuck.
+        pass
+        #graunch_o.graunchStop()   # belt and braces - sometimes it gets stuck.
 
     return gearState # for unit testing
 
@@ -320,6 +342,8 @@ def memoryMapCallback(clutchEvent=None, gearEvent=None, stopEvent=False):
   if gearEvent != None:
     if gearEvent == 0: # Neutral
             gearStateMachine(gearDeselect)
+    elif gearEvent == SuccessiveNeutral:
+            gearStateMachine(SuccessiveNeutral)
     else:
             gearStateMachine(gearSelect)
   if stopEvent:
@@ -334,6 +358,7 @@ def main():
   global graunch_o
   global debug
   global graunchWav
+  global neutralButton
 
   config_o = Config()
   debug = config_o.get('miscellaneous', 'debug')

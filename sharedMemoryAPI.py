@@ -1,4 +1,4 @@
-# Inherit k3nny's Python mapping of The Iron Wolf's rF2 Shared Memory Tools
+# Inherit Python mapping of The Iron Wolf's rF2 Shared Memory Tools
 # and add access functions to it.
 import rF2data
 

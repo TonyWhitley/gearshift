@@ -50,6 +50,9 @@
     <Compile Include="sharedMemoryAPI.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Tests\logMemoryMapInputs.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Tests\test_Gearshift.py" />
     <Compile Include="Tests\test_MemoryMapInputs.py" />
     <Compile Include="Tests\test_sharedMemoryAPI.py" />

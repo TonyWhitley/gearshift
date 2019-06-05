@@ -12,7 +12,7 @@
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 65 # The git branch commit count
+BUILD_REVISION = 66 # The git branch commit count
 versionStr = 'gearshift V3.0.%d' % BUILD_REVISION
 versionDate = '2019-06-04'
 
@@ -23,8 +23,10 @@ credits = "Reads the clutch and shifter from rF2 using a Python\n" \
  "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n" \
  "Icon made by https://www.flaticon.com/authors/those-icons"
 
+import sys
 from threading import Timer
-from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
+from typing import Optional
+from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC # type: ignore
 
 from configIni import Config
 import directInputKeySend
@@ -50,13 +52,14 @@ reshift =           True    # If True then neutral has to be selected before
 global debug
 debug           =   0       # 0, 1, 2 or 3
 neutralButton   =   None  # The key used to force neutral, whatever the shifter says
-graunchWav = None
+graunchWav = ''
 
 # Gear change events
 clutchDisengage         = 'clutchDisengage'
 clutchEngage            = 'clutchEngage'
 gearSelect              = 'gearSelect'
 gearDeselect            = 'gearDeselect'
+successiveNeutral       = 'successiveNeutral'
 graunchTimeout          = 'graunchTimeout'  # Memory-mapped mode
 smStop                  = 'stop'  # Stop the state machine
 
@@ -64,11 +67,11 @@ smStop                  = 'stop'  # Stop the state machine
 gearState = 'neutral' # TBD
 
 ClutchPrev = 2  # Active states are 0 and 1 so 2 is "unknown"
-graunch_o = None
+graunch_o = graunch()
 
 #################################################################################
 # AHK replacement fns
-def SetTimer(callback, mS):
+def SetTimer(callback, mS: int) -> Timer:
   if mS > 0:
     timer = Timer(mS / 1000, callback)
     timer.start()
@@ -76,20 +79,20 @@ def SetTimer(callback, mS):
     pass # TBD delete timer?
   return timer
 
-def StopTimer(timer):
+def StopTimer(timer) -> None:
   timer.cancel()
 
-def SoundPlay(soundfile):
+def SoundPlay(soundfile: str) -> None:
   PlaySound(soundfile, SND_FILENAME|SND_LOOP|SND_ASYNC)
 
-def SoundStop():
+def SoundStop() -> None:
   PlaySound(None, SND_FILENAME)
 
-def msgBox(str):
+def msgBox(str: str) -> None:
   print(str)
 
 #################################################################################
-def quit(errorCode):
+def quit(errorCode: int) -> None:
   # User presses a key before exiting program
   print('\n\nPress Enter to exit')
   input()
@@ -97,11 +100,11 @@ def quit(errorCode):
 
 #################################################################################
 class graunch:
-  def __init__(self):
+  def __init__(self) -> None:
         self.graunching = False
         self.neutralTimer = None
 
-  def graunchStart(self):
+  def graunchStart(self) -> None:
         # Start the graunch noise and sending "Neutral"
         # Start the noise
         global graunchWav
@@ -111,14 +114,14 @@ class graunch:
         if debug >= 2:
             msgBox('GRAUNCH!')
             
-  def graunchStop(self):
+  def graunchStop(self) -> None:
         if self.graunching:
           SoundStop()  # stop the noise
         self.graunching = False
         self.stopNeutralTimeout()
         self.__releaseNeutralButton()
 
-  def stopNeutralTimeout(self):
+  def stopNeutralTimeout(self) -> None:
     """ 
     We were waiting to see if  the effect of the "Neutral" key 
     would persist but rF2 has selected the gear again
@@ -128,11 +131,11 @@ class graunch:
       self.neutralTimer = None
       self.__releaseNeutralButton()
 
-  def isGraunching(self):
+  def isGraunching(self) -> bool:
     return self.graunching
 
   # Internal functions
-  def __sendNeutralButton(self):
+  def __sendNeutralButton(self) -> None:
       global neutralButton
       if self.graunching:      
         # Send the "Neutral" key press
@@ -140,19 +143,19 @@ class graunch:
         # If rF2 doesn't bounce it back into gear before this
         # timer times out then the driver has moved the stick
         # back to neutral
-        self.neutralTimer = SetTimer(self.__neutralTimeout, 300)
+        self.neutralTimer = SetTimer(self.__neutralTimeout, 300) # type: ignore
         if debug >= 1:
             directInputKeySend.PressReleaseKey('DIK_G')
         SetTimer(self.__releaseNeutralButton, 20)
 
-  def __releaseNeutralButton(self):
+  def __releaseNeutralButton(self) -> None:
         # Send the "Neutral" key release
         global neutralButton
         directInputKeySend.ReleaseKey(neutralButton)
         if self.graunching:
           SetTimer(self.__sendNeutralButton, 20)
 
-  def __neutralTimeout(self):
+  def __neutralTimeout(self) -> None:
       """ Shared memory.
       Neutral key causes gearDeselect event but if player doesn't move shifter
       to neutral then rF2 will quickly report that it's in gear again,
@@ -167,7 +170,7 @@ class graunch:
 
 ######################################################################
 
-def gearStateMachine(event):
+def gearStateMachine(event: str) -> str:
     global gearState 
     global graunch_o
     global debug
@@ -270,7 +273,7 @@ def gearStateMachine(event):
                 graunch_o.graunchStart()   # graunch again
         elif event == gearDeselect:
                 # Neutral key press received
-				        """
+                """
                 gearState = graunchingNeutral
                 #graunch_o.__neutralTimeout()
 
@@ -288,7 +291,7 @@ def gearStateMachine(event):
                 gearState = neutral
                 graunch_o.graunchStop()
                 """
-				        pass
+                pass
 
         elif event == gearSelect:
                 graunch_o.graunchStop()
@@ -311,14 +314,14 @@ def gearStateMachine(event):
 
     return gearState # for unit testing
 
-def set_graunch_o(_graunch_o):
+def set_graunch_o(_graunch_o: graunch) -> None:
     global graunch_o
     graunch_o = _graunch_o
 
 
 
 
-def WatchClutch(Clutch):
+def WatchClutch(Clutch: int=100) -> None:
     # Clutch 100 is up, 0 is down to the floor
     global ClutchPrev
     ClutchState = 1 # engaged
@@ -336,25 +339,25 @@ def WatchClutch(Clutch):
 
 #############################################################
 
-def memoryMapCallback(clutchEvent=None, gearEvent=None, stopEvent=False):
+def memoryMapCallback(clutchEvent: int=None, gearEvent: int=None, stopEvent: bool=False) -> None:
   if clutchEvent != None:
-    WatchClutch(clutchEvent)
+    WatchClutch(clutchEvent) # type: ignore
   if gearEvent != None:
     if gearEvent == 0: # Neutral
             gearStateMachine(gearDeselect)
     elif gearEvent == SuccessiveNeutral:
-            gearStateMachine(SuccessiveNeutral)
+            gearStateMachine(successiveNeutral)
     else:
             gearStateMachine(gearSelect)
   if stopEvent:
     gearStateMachine(smStop)
 
-def ShowButtons():
+def ShowButtons() -> None:
   pass
 
 global neutralButtonKeycode
 
-def main():
+def main(): # -> (int, Controls):
   global graunch_o
   global debug
   global graunchWav

@@ -128,6 +128,7 @@ class Controls:
 
 def mock_callback(clutchEvent=None, gearEvent=None, stopEvent=None):
     # Mock stub
+    global controls_o
     if clutchEvent or gearEvent or stopEvent:
       clutch = controls_o.clutchState
       gear   = controls_o.currentGear
@@ -135,6 +136,7 @@ def mock_callback(clutchEvent=None, gearEvent=None, stopEvent=None):
       print('Driver %s, Gear: %d, Clutch position: %d' % (driver, gear, clutch))
 
 def test_main():
+    global controls_o
     class graunch:  #dummy
       def isGraunching(self):
         return False

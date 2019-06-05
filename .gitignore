@@ -346,3 +346,4 @@ ASALocalRun/
 .vscode/settings.json
 .pylintrc
 /gitRev.bat
+/MyPy

@@ -1,12 +1,10 @@
 # Simple GUI to poke inputs into the memory map
 
 import tkinter as tk
-from tkinter import font, ttk, messagebox #, PhotoImage
+from tkinter import ttk, messagebox #, PhotoImage
 from time import sleep
 
 from sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
-
-#fontBold = font.Font(family='Helvetica', size=8, weight='bold', slant='italic')
 
 # http://www.science.smith.edu/dftwiki/index.php/Color_Charts_for_TKinter
 bg_colour = 'LightGoldenrod1'
@@ -126,7 +124,6 @@ class Gui:
 
     tkLabel_EngineRPM = tk.Label(tkFrame_Revs,
                                           text='Engine revs',
-                                          #font=fontBold,
                                           justify=tk.LEFT,
                                           background=bg_colour)
     tkLabel_EngineRPM.grid(column=_EngineRPMCol, row=1, sticky='nw')
@@ -154,7 +151,6 @@ class Gui:
 
     tkLabel_ClutchRPM = tk.Label(tkFrame_Revs,
                                           text='Gearbox Revs',
-                                          #font=fontBold,
                                           justify=tk.LEFT,
                                           background=bg_colour)
     tkLabel_ClutchRPM.grid(column=_ClutchRPMCol, row=1, sticky='n')
@@ -294,7 +290,6 @@ class live(Gui):
 
     tkLabel_Clutch = tk.Label(tkFrame_Instructions,
                                           text='Clutch engaged',
-                                          #font=fontBold,
                                           justify=tk.LEFT,
                                           background=bg_colour)
     tkLabel_Clutch.grid(column=1, row=1, sticky='e')

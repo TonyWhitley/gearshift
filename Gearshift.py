@@ -12,9 +12,9 @@
 from directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 66 # The git branch commit count
+BUILD_REVISION = 67 # The git branch commit count
 versionStr = 'gearshift V3.0.%d' % BUILD_REVISION
-versionDate = '2019-06-04'
+versionDate = '2019-06-24'
 
 credits = "Reads the clutch and shifter from rF2 using a Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -67,7 +67,6 @@ smStop                  = 'stop'  # Stop the state machine
 gearState = 'neutral' # TBD
 
 ClutchPrev = 2  # Active states are 0 and 1 so 2 is "unknown"
-graunch_o = graunch()
 
 #################################################################################
 # AHK replacement fns
@@ -196,7 +195,7 @@ def gearStateMachine(event: str) -> str:
       pass
     elif event == gearDeselect:
       pass
-    elif event == SuccessiveNeutral:
+    elif event == successiveNeutral:
       pass
     elif event == graunchTimeout:
       pass

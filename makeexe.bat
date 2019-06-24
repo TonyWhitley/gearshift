@@ -28,12 +28,14 @@ if not exist envPygame\scripts	python.exe -m venv envPygame && envPygame/Scripts
 ::  --hidden-import pygame.base 
 
 rem --icon doesn't seem to do anything
+rem --noconsole removes the console in the background but for now
+rem             it's best to keep it for error messages
 pyinstaller ^
   --onefile ^
   --distpath . ^
   --paths envPygame\lib\site-packages ^
   --add-data resources\gearshift.ico;. ^
-  --noconsole ^
+  --add-data Grind_default.wav;. ^
   --icon resources\gearshift.ico ^
   "%~dp0\gearshift.py "
 pause

@@ -67,8 +67,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Documentation\Gearshift.JPG" />
+    <Content Include="makeexe.bat" />
     <Content Include="resources\gearshift.png" />
-    <Content Include="gearshift.ini" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />

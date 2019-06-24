@@ -1,5 +1,7 @@
 # Simple GUI to poke inputs into the memory map
 
+from os import path
+import sys
 import tkinter as tk
 from tkinter import ttk, messagebox #, PhotoImage
 from time import sleep
@@ -386,7 +388,13 @@ def gui(maxRevs=10000, maxFwdGears=6, mocking=False, instructions='', graunch_o=
   root.configure(background=bg_colour)
   #Worked but crashed unit tests - temp image file?
   #root.tk.call('wm', 'iconphoto', root._w, PhotoImage(file='resources/gearshift.png'))
-  root.iconbitmap('resources/gearshift.ico')
+  if getattr( sys, 'frozen', False ) :
+    # running in a PyInstaller bundle (exe)
+    _p = path.join(sys._MEIPASS, 'gearshift.ico')
+    root.iconbitmap(_p)
+  else :
+    # running live
+    root.iconbitmap('resources/gearshift.ico')
   menubar = tk.Menu(root, background=bg_colour, activebackground=bg_colour)
   _m = Menu(menubar)
   root.config(menu=menubar, background=bg_colour)

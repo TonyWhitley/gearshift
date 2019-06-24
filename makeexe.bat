@@ -27,10 +27,14 @@ if not exist envPygame\scripts	python.exe -m venv envPygame && envPygame/Scripts
 ::  --paths env\Lib\site-packages 
 ::  --hidden-import pygame.base 
 
+rem --icon doesn't seem to do anything
 pyinstaller ^
   --onefile ^
   --distpath . ^
   --paths envPygame\lib\site-packages ^
+  --add-data resources\gearshift.ico;. ^
+  --noconsole ^
+  --icon resources\gearshift.ico ^
   "%~dp0\gearshift.py "
 pause
 

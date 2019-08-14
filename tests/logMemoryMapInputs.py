@@ -3,12 +3,12 @@ Read the inputs at an interval and log them
 To see rF2's response to Neutral button send
 "Neutral" whenever gear is selected
 """
-from directInputKeySend import DirectInputKeyCodeTable
-import directInputKeySend
+from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable
+import pyDirectInputKeySend.directInputKeySend
 
 from scheduler import MyThread
 
-from sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
+from pyRfactor2SharedMemory.sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
 from mockMemoryMap import gui
 
 tick_interval = 0.05 # seconds

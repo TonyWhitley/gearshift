@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox #, PhotoImage
 from time import sleep
 
-from sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
+from pyRfactor2SharedMemory.sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
 
 # http://www.science.smith.edu/dftwiki/index.php/Color_Charts_for_TKinter
 bg_colour = 'LightGoldenrod1'

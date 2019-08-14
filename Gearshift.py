@@ -9,7 +9,7 @@
 # The game has to have a key mapped as "Neutral". (Default: Numpad 0)
 #
 
-from directInputKeySend import DirectInputKeyCodeTable
+from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
 BUILD_REVISION = 67 # The git branch commit count
@@ -29,7 +29,7 @@ from typing import Optional
 from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC # type: ignore
 
 from configIni import Config
-import directInputKeySend
+import pyDirectInputKeySend.directInputKeySend as directInputKeySend
 
 from memoryMapInputs import Controls
 

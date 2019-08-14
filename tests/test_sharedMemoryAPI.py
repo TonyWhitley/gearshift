@@ -1,6 +1,6 @@
 import unittest
 
-from sharedMemoryAPI import test_main
+from pyRfactor2SharedMemory.sharedMemoryAPI import test_main
 
 class Test_sharedMemoryAPI(unittest.TestCase):
   def test_sharedMemoryAPI_main_runs(self):

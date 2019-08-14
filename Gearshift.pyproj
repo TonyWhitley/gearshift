@@ -33,7 +33,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Gearshift.py" />
-    <Compile Include="directInputKeySend.py">
+    <Compile Include="pyDirectInputKeySend\directInputKeySend.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="memoryMapInputs.py">
@@ -43,11 +43,17 @@
     <Compile Include="mockMemoryMap.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="rF2data.py" />
+    <Compile Include="pyDirectInputKeySend\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="pyRfactor2SharedMemory\rF2data.py" />
+    <Compile Include="pyRfactor2SharedMemory\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="scheduler.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="sharedMemoryAPI.py">
+    <Compile Include="pyRfactor2SharedMemory\sharedMemoryAPI.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\logMemoryMapInputs.py">
@@ -62,6 +68,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Documentation\" />
+    <Folder Include="pyDirectInputKeySend\" />
+    <Folder Include="pyRfactor2SharedMemory\" />
     <Folder Include="resources\" />
     <Folder Include="Tests\" />
   </ItemGroup>

@@ -4,7 +4,7 @@
 
 from scheduler import MyThread
 
-from sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
+from pyRfactor2SharedMemory.sharedMemoryAPI import SimInfoAPI, Cbytestring2Python
 from mockMemoryMap import gui
 
 SuccessiveNeutral = -2

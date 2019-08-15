@@ -1,0 +1,6 @@
+[submodule "pyDirectInputKeySend"]
+	path = pyDirectInputKeySend
+	url = https://github.com/TonyWhitley/pyDirectInputKeySend
+[submodule "pyRfactor2SharedMemory"]
+	path = pyRfactor2SharedMemory
+	url = https://github.com/TonyWhitley/pyRfactor2SharedMemory

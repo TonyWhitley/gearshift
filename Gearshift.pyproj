@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>Gearshift</Name>
     <RootNamespace>Gearshift</RootNamespace>
-    <InterpreterId>Global|PythonCore|3.6</InterpreterId>
+    <InterpreterId>MSBuild|env|$(MSBuildProjectFullPath)</InterpreterId>
     <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -26,7 +26,6 @@
     <Compile Include="configIni.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Configurer.py" />
     <Compile Include="damage.py">
       <SubType>Code</SubType>
     </Compile>
@@ -34,20 +33,18 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Gearshift.py" />
-    <Compile Include="directInputKeySend.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="memoryMapInputs.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Mmap_for_DSPS_V22.py" />
     <Compile Include="mockMemoryMap.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="pyDirectInputKeySend\directInputKeySend.py" />
+    <Compile Include="pyDirectInputKeySend\__init__.py" />
+    <Compile Include="pyRfactor2SharedMemory\rF2data.py" />
+    <Compile Include="pyRfactor2SharedMemory\sharedMemoryAPI.py" />
+    <Compile Include="pyRfactor2SharedMemory\__init__.py" />
     <Compile Include="scheduler.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="sharedMemoryAPI.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tests\test_Gearshift.py" />
@@ -56,19 +53,41 @@
     <Compile Include="Tests\test_mockMemoryMap.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="wheel.py">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Documentation\" />
+    <Folder Include="pyDirectInputKeySend\" />
+    <Folder Include="pyDirectInputKeySend\__pycache__\" />
+    <Folder Include="pyRfactor2SharedMemory\" />
+    <Folder Include="pyRfactor2SharedMemory\__pycache__\" />
     <Folder Include="Tests\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Documentation\Gearshift.JPG" />
+    <Content Include="pyDirectInputKeySend\.git" />
+    <Content Include="pyDirectInputKeySend\.gitignore" />
+    <Content Include="pyDirectInputKeySend\README.md" />
+    <Content Include="pyDirectInputKeySend\__pycache__\directInputKeySend.cpython-36.pyc" />
+    <Content Include="pyDirectInputKeySend\__pycache__\__init__.cpython-36.pyc" />
+    <Content Include="pyRfactor2SharedMemory\.git" />
+    <Content Include="pyRfactor2SharedMemory\.gitignore" />
+    <Content Include="pyRfactor2SharedMemory\__pycache__\rF2data.cpython-36.pyc" />
+    <Content Include="pyRfactor2SharedMemory\__pycache__\sharedMemoryAPI.cpython-36.pyc" />
+    <Content Include="pyRfactor2SharedMemory\__pycache__\__init__.cpython-36.pyc" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <Interpreter Include="env\">
+      <Id>env</Id>
+      <Version>3.6</Version>
+      <Description>env (Python 3.6 (64-bit))</Description>
+      <InterpreterPath>Scripts\python.exe</InterpreterPath>
+      <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
+      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
+      <Architecture>X64</Architecture>
+    </Interpreter>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

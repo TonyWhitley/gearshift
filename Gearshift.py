@@ -9,12 +9,12 @@
 # The game has to have a key mapped as "Neutral". (Default: Numpad 0)
 #
 
-from directInputKeySend import DirectInputKeyCodeTable
+from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
 BUILD_REVISION = 1 # The git branch commit count
-versionStr = 'gearshift V3.0.%d' % BUILD_REVISION
-versionDate = '2019-05-02'
+versionStr = 'gearshift V3.1.%d' % BUILD_REVISION
+versionDate = '2019-08-15'
 
 credits = "Reads the clutch and shifter from rF2 using k3nny's Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -25,7 +25,7 @@ from threading import Timer
 from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
 
 from configIni import Config
-import directInputKeySend
+import pyDirectInputKeySend.directInputKeySend as directInputKeySend
 
 from memoryMapInputs import Controls
 

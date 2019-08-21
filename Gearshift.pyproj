@@ -39,7 +39,6 @@
     <Compile Include="memoryMapInputs.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Mmap_for_DSPS_V22.py" />
     <Compile Include="mockMemoryMap.py">
       <SubType>Code</SubType>
     </Compile>

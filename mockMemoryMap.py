@@ -19,12 +19,31 @@ GRAUNCH_DELAY = 100.0 / 1000.0
 GRAUNCH_DELAY2 = 200.0 / 1000.0
 TICKOVER = 1000
 
+# pylint: disable=global-statement
+# pylint: disable=global-at-module-level
+# pylint: disable=global-variable-undefined
+global status_poker # Function pointer to poke text into status window
+global status_poker_scroll
+
+def status_poker_fn(string) -> None:
+    """
+    Jesus! Hack alert!
+    Poke text into rFactorStatusFrame class's text widget
+    """
+    try:
+        status_poker(tk.END, string+'\n')
+        status_poker_scroll(tk.END)
+    except: # pylint: disable=bare-except
+        pass
+
 class Gui:
   """
   Superclass for GUI items common to Mock and Live.
   """
   def __init__(self, parentFrame, maxRevs, maxFwdGears=6):
     """ Put this into the parent frame """
+    global status_poker
+    global status_poker_scroll
     self.parentFrame = parentFrame
     self.info = SimInfoAPI()
     #clutch = self.info.playersVehicleTelemetry().mUnfilteredClutch') # 1.0 clutch down, 0 clutch up
@@ -42,21 +61,27 @@ class Gui:
     tkFrame_Status = tk.LabelFrame(parentFrame, text='rFactor 2 status', background=bg_colour)
     tkFrame_Status.grid(column=2, row=1, sticky='nsew', padx=self.xPadding)
 
-    _lbl = tk.Label(tkFrame_Status, 
-             text=self.info.versionCheckMsg,
-             justify='l',
-             background=bg_colour)
-    _lbl.grid()
-
     self._createBoolVar('rF2 running', False)
-    self._tkCheckbuttons['rF2 running'] = tk.Checkbutton(tkFrame_Status,
-                                                  text='rF2 running and\nshared memory\nworking',
-                                                  justify='l',
-                                                  #indicatoron=0,
-                                                  variable=self.vars['rF2 running'],
-                                                  background=bg_colour,
-                                                  selectcolor=bg_colour)
+    self._tkCheckbuttons['rF2 running'] = \
+        tk.Checkbutton(tkFrame_Status,
+                       text='rF2 running and\nshared memory\nworking',
+                       justify='l',
+                       #indicatoron=0,
+                       variable=self.vars['rF2 running'],
+                       background=bg_colour,
+                       selectcolor=bg_colour)
     self._tkCheckbuttons['rF2 running'].grid(sticky='w')
+
+    self._createBoolVar('Shared memory working', False)
+    self._tkCheckbuttons['Shared memory working'] = \
+        tk.Checkbutton(tkFrame_Status,
+                       text='Shared memory\nworking',
+                       justify='l',
+                       #indicatoron=0,
+                       variable=self.vars['Shared memory working'],
+                       background=bg_colour,
+                       selectcolor=bg_colour)
+    self._tkCheckbuttons['Shared memory working'].grid(sticky='w')
 
     self._createBoolVar('Track loaded', False)
     self._tkCheckbuttons['Track loaded'] = tk.Checkbutton(tkFrame_Status,
@@ -90,11 +115,35 @@ class Gui:
                                                   selectcolor=bg_colour)
     self._tkCheckbuttons['AI driving'].grid(sticky='w')
 
+    _row = 5
     self._createVar('Player', False)
-    self.driverLabel = tk.Label(tkFrame_Status,
-                           text='',
-                           background=bg_colour)
-    self.driverLabel.grid(sticky='w')
+    _driverLabel = tk.Label(tkFrame_Status,
+                            text='Driver',
+                            background=bg_colour)
+    _driverLabel.grid(column=1,
+                        row=_row,
+                        sticky='e'
+                        )
+    self.driverLabel = tk.Entry(tkFrame_Status,
+                                textvariable=self.vars['Player'],
+                                background=bg_colour)
+    self.driverLabel.grid(column=2,
+                            row=_row,
+                            sticky='w')
+
+    self._createVar('Status message', '')
+    self.statusText = tk.Text(tkFrame_Status,
+                                height=8,
+                                width=20,
+                                wrap=tk.WORD,
+                                background=bg_colour
+                                )
+    self.statusText.grid(column=0,
+                            columnspan=3,
+                            sticky='nswe')
+    status_poker = self.statusText.insert
+    status_poker_scroll = self.statusText.see
+
 
     ####################################################
     self._createBoolVar('Clutch pressed', False)
@@ -281,7 +330,7 @@ class live(Gui):
     self._createBoolVar('Graunching', False)
     self._createVar('Clutch', 0)
 
-    tkFrame_Instructions = tk.LabelFrame(parentFrame, background=bg_colour)
+    tkFrame_Instructions = tk.LabelFrame(parentFrame, text= 'Gearshift status', background=bg_colour)
     tkFrame_Instructions.grid(column=1, row=1, sticky='nsew', padx=self.xPadding)
     tkLabel_instructions = tk.Label(tkFrame_Instructions,
                                     justify='l',
@@ -324,9 +373,11 @@ class live(Gui):
     self._tkCheckbuttons['Graunching'].grid(column=2, row=2, sticky='sw', padx=self.xPadding)
 
     # Kick off the tick
+    self.info = SimInfoAPI()
+    self.statusText.insert(tk.END, self.info.versionCheck()+'\n')
     self.__tick()
 
-  #######################################
+    #######################################
 
   def __tick(self):
     # timed callback to update live status
@@ -338,9 +389,10 @@ class live(Gui):
     self.vars['Clutch'].set(mClutch)
     self.vars['Gear'].set(GEARS[self.info.playersVehicleTelemetry().mGear+1])
     self.vars['rF2 running'].set(self.info.isRF2running())
+    self.vars['Shared memory working'].set(self.info.isSharedMemoryAvailable())
     self.vars['Track loaded'].set(self.info.isTrackLoaded())
     self.vars['On track'].set(self.info.isOnTrack())
-    self.driverLabel.config(text=self.info.driverName())
+    self.vars['Player'].set(self.info.driverName())
     if not self.info.isOnTrack() or \
       self._timestamp < self.info.playersVehicleTelemetry().mElapsedTime:
       self.vars['Escape pressed'].set(False)

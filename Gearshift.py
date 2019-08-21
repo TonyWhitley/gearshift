@@ -12,9 +12,9 @@
 from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 67 # The git branch commit count
-versionStr = 'gearshift V3.0.%d' % BUILD_REVISION
-versionDate = '2019-06-24'
+BUILD_REVISION = 75 # The git branch commit count
+versionStr = 'gearshift V3.1.%d' % BUILD_REVISION
+versionDate = '2019-08-21'
 
 credits = "Reads the clutch and shifter from rF2 using a Python\n" \
  "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \

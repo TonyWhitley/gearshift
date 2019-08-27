@@ -28,7 +28,7 @@ from threading import Timer
 from typing import Optional
 from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC # type: ignore
 
-from configIni import Config
+from gearshift.configIni import Config
 import pyDirectInputKeySend.directInputKeySend as directInputKeySend
 
 from memoryMapInputs import Controls
@@ -388,17 +388,21 @@ def main(): # -> (int, Controls):
       print(_keyCode, end=', ')
     quit(99)
 
+  graunch_o = graunch()
+
+  controls_o = Controls(debug=debug,mocking=mockInput)
+
+  return controls_o, graunch_o
+
+def main_gui(controls_o, graunch_o):
   instructions = 'If gear selection fails this program will send %s ' \
     'to the active window until you reselect a gear.\n\n' \
     'You can minimise this window now.\n' \
     'Do not close it until you have finished racing.' % neutralButtonKeycode
 
-  graunch_o = graunch()
 
-
-#############################################################
+  #############################################################
   # Using shared memory, reading clutch state and gear selected direct from rF2
-  controls_o = Controls(debug=debug,mocking=mockInput)
   controls_o.run(memoryMapCallback)
   # mockInput: testing using the simple GUI to poke inputs into the memory map
   # otherwise just use the GUI slightly differently
@@ -410,7 +414,8 @@ def main(): # -> (int, Controls):
 #############################################################
 
 if __name__ == "__main__":
-  root, controls_o = main()
+  controls_o, graunch_o = main()
+  root = main_gui()
   if root != 'OK':
     root.mainloop()
     controls_o.stop()

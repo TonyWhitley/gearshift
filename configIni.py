@@ -52,7 +52,7 @@ class Config:
         self.set('miscellaneous', val, default)
     
     # if there is an existing file parse values over those
-    if os.path.exists(configFileName):
+    if os.path.isfile(configFileName):
       self.config.read(configFileName)
     else:
       self.write()

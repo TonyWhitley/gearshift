@@ -15,7 +15,7 @@ shifterValues = {
   '2nd gear' : '0',
   '3rd gear' : '0',
   '4th gear' : '0',
- 
+
   '5th gear' : '0',
   '6th gear' : '0',
   '7th gear' : '0',
@@ -34,14 +34,16 @@ miscValues = {
   'wav file'        : 'Grind_default.wav',
   'debug'           : '0',
   'mock input'      : '0',
-  'test mode'       : '0'
-  }
+  'test mode'       : '0',
+  'controller_file' : '%ProgramFiles(x86)%/Steam/steamapps/common/rFactor 2/Userdata/player/controller.json'
+}
 
 
 class Config:
+  """ docstring """
   def __init__(self):
     # instantiate
-    self.config = ConfigParser()
+    self.config = ConfigParser(interpolation=None)
 
     # set default values
     for val, default in clutchValues.items():
@@ -50,16 +52,12 @@ class Config:
         self.set('shifter', val, default)
     for val, default in miscValues.items():
         self.set('miscellaneous', val, default)
-    
+
     # if there is an existing file parse values over those
     if os.path.exists(configFileName):
       self.config.read(configFileName)
     else:
       self.write()
-      if self.get('miscellaneous', 'shared memory') == 0:
-        # then configure the controller(s)
-        from Configurer import main
-        main()
       self.config.read(configFileName)
 
     if self.get('miscellaneous', 'shared memory'):
@@ -81,13 +79,18 @@ class Config:
     except: # No such section in file
       self.set(section, val, '')
       return None
-
+  def get_controller_file(self):
+      # Special case - expand the path
+      return os.path.normpath(
+          os.path.expandvars(
+              self.config.get('miscellaneous', 'controller_file')))
   def write(self):
     # save to a file
     with open(configFileName, 'w') as configfile:
         self.config.write(configfile)
 
 if __name__ == "__main__":
+    # Test
   _config_o = Config()
   section = 'clutch'
   val = 'controller'

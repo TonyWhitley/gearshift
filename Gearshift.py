@@ -9,10 +9,7 @@
 # The game has to have a key mapped as "Neutral". (Default: Numpad 0)
 #
 
-from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable
-from mockMemoryMap import gui
-
-BUILD_REVISION = 57 # The git branch commit count
+BUILD_REVISION = 58 # The git branch commit count
 versionStr = 'gearshift V3.1.%d' % BUILD_REVISION
 versionDate = '2019-11-16'
 
@@ -24,10 +21,13 @@ credits = "Reads the clutch and shifter from rF2 using\n" \
 
 from threading import Timer
 from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
+from tkinter import messagebox
 
-from configIni import Config
+from configIni import Config, configFileName
 import pyDirectInputKeySend.directInputKeySend as directInputKeySend
-
+from readJSONfile import Json
+from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, rfKeycodeToDIK
+from mockMemoryMap import gui
 from memoryMapInputs import Controls
 
 # Main config variables, loaded from gearshift.ini
@@ -48,6 +48,7 @@ global debug
 debug           =   0       # 0, 1, 2 or 3
 neutralButton   =   None  # The key used to force neutral, whatever the shifter says
 graunchWav = None
+controller_file = None
 
 # Gear change events
 clutchDisengage         = 'clutchDisengage'
@@ -312,6 +313,8 @@ def main():
   global debug
   global graunchWav
   global ClutchEngaged
+  global controller_file
+  global neutralButton
 
   config_o = Config()
   debug = config_o.get('miscellaneous', 'debug')
@@ -324,6 +327,7 @@ def main():
 
   neutralButton = config_o.get('miscellaneous', 'neutral button')
   ignitionButton = config_o.get('miscellaneous', 'ignition button')
+  controller_file = config_o.get_controller_file()
   if neutralButton in DirectInputKeyCodeTable: # (it must be)
     neutralButtonKeycode = neutralButton[4:]
   else:
@@ -356,12 +360,39 @@ def main():
   root = gui(mocking=mockInput,
               instructions=instructions,
               graunch_o=graunch_o,
-              controls_o=controls_o)
+              controls_o=controls_o
+              )
   return root, controls_o
 #############################################################
 
+def get_neutral_control(_controller_file_test=None):
+    """
+    Get the keycode specified in controller.json
+    """
+    global controller_file
+    global neutralButton
+    
+    if _controller_file_test:
+        _controller_file = _controller_file_test
+    else:
+        _controller_file = controller_file
+    _JSON_O = Json(_controller_file)
+    neutral_control = _JSON_O.get_item("Control - Neutral")
+    if neutral_control:
+        keycode = rfKeycodeToDIK(neutral_control[1])
+        if not keycode == neutralButton:
+            err = F'"Control - Neutral" in {_controller_file}\n'\
+                F'does not match {configFileName} "neutral button" entry'.format()
+            messagebox.showinfo('Config error', err)
+        return
+
+    err = F'"Control - Neutral" not in {_controller_file}\n'\
+        F'See {configFileName} "controller_file" entry'.format()
+    messagebox.showinfo('Config error', err)
+
 if __name__ == "__main__":
   root, controls_o = main()
+  get_neutral_control()
   if root != 'OK':
     root.mainloop()
     controls_o.stop()

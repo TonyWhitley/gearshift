@@ -32,5 +32,7 @@ pyinstaller ^
   --distpath . ^
   --paths envPygame\lib\site-packages ^
   "%~dp0\gearshift.py "
+
+if exist version.txt pyi-set_version version.txt Gearshift.exe
 pause
 

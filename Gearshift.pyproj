@@ -34,6 +34,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Gearshift.py" />
+    <Compile Include="makeVersionText.py" />
     <Compile Include="memoryMapInputs.py">
       <SubType>Code</SubType>
     </Compile>
@@ -45,6 +46,7 @@
     <Compile Include="pyRfactor2SharedMemory\rF2data.py" />
     <Compile Include="pyRfactor2SharedMemory\sharedMemoryAPI.py" />
     <Compile Include="pyRfactor2SharedMemory\__init__.py" />
+    <Compile Include="readJSONfile.py" />
     <Compile Include="scheduler.py">
       <SubType>Code</SubType>
     </Compile>
@@ -57,6 +59,8 @@
     <Compile Include="Tests\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="WindowsVersionFile\WindowsVersionFile.py" />
+    <Compile Include="WindowsVersionFile\__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Documentation\" />
@@ -65,6 +69,8 @@
     <Folder Include="pyRfactor2SharedMemory\" />
     <Folder Include="pyRfactor2SharedMemory\__pycache__\" />
     <Folder Include="Tests\" />
+    <Folder Include="WindowsVersionFile\" />
+    <Folder Include="WindowsVersionFile\__pycache__\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Documentation\Gearshift.JPG" />
@@ -78,6 +84,12 @@
     <Content Include="pyRfactor2SharedMemory\__pycache__\rF2data.cpython-36.pyc" />
     <Content Include="pyRfactor2SharedMemory\__pycache__\sharedMemoryAPI.cpython-36.pyc" />
     <Content Include="pyRfactor2SharedMemory\__pycache__\__init__.cpython-36.pyc" />
+    <Content Include="WindowsVersionFile\.git" />
+    <Content Include="WindowsVersionFile\.gitattributes" />
+    <Content Include="WindowsVersionFile\.gitignore" />
+    <Content Include="WindowsVersionFile\WindowsVersionFile.pyproj" />
+    <Content Include="WindowsVersionFile\WindowsVersionFile.sln" />
+    <Content Include="WindowsVersionFile\__pycache__\__init__.cpython-36.pyc" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />

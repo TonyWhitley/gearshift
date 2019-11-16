@@ -1,4 +1,4 @@
-# Gearshift.py - monitors the rFactor 2 shared memory values for the shifter 
+# Gearshift.py - monitors the rFactor 2 shared memory values for the shifter
 # and clutch and if a gear change is not done properly it repeatedly sends a
 # "Neutral" key press to prevent the gear being selected.
 #
@@ -12,14 +12,15 @@
 from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable
 from mockMemoryMap import gui
 
-BUILD_REVISION = 1 # The git branch commit count
+BUILD_REVISION = 57 # The git branch commit count
 versionStr = 'gearshift V3.1.%d' % BUILD_REVISION
-versionDate = '2019-08-15'
+versionDate = '2019-11-16'
 
-credits = "Reads the clutch and shifter from rF2 using k3nny's Python\n" \
- "mapping of The Iron Wolf's rF2 Shared Memory Tools.\n" \
+credits = "Reads the clutch and shifter from rF2 using\n" \
+ "The Iron Wolf's rF2 Shared Memory Tools.\n" \
  "https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin\n" \
- "https://forum.studio-397.com/index.php?members/k3nny.35143/\n\n"
+ "Inspired by http://www.richardjackett.com/grindingtranny\n" \
+ "I borrowed Grind_default.wav from there to make the noise of the grinding gears.\n\n"
 
 from threading import Timer
 from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
@@ -56,7 +57,7 @@ gearDeselect            = 'gearDeselect'
 graunchTimeout          = 'graunchTimeout'  # Memory-mapped mode
 smStop                  = 'stop'  # Stop the state machine
 
-#globals 
+#globals
 gearState = 'neutral' # TBD
 
 ClutchPrev = 2  # Active states are 0 and 1 so 2 is "unknown"
@@ -68,7 +69,7 @@ def SetTimer(callback, mS):
   if mS > 0:
     timer = Timer(mS / 1000, callback)
     timer.start()
-  else: 
+  else:
     pass # TBD delete timer?
 
 def SoundPlay(soundfile):
@@ -117,7 +118,7 @@ class graunch:
 
 
   def graunch2(self):
-      if self.graunching:      
+      if self.graunching:
         # Send the "Neutral" key press
         directInputKeySend.PressKey(neutralButton)
         SetTimer(self.graunch3, 3000)
@@ -129,7 +130,7 @@ class graunch:
       Neutral key causes gearDeselect event but if player doesn't move shifter
       to neutral then rF2 will quickly report that it's in gear again,
       causing a gearSelect event.
-      If SM is still in neutral (gearSelect hasn't happened) when this timer 
+      If SM is still in neutral (gearSelect hasn't happened) when this timer
       expires then player has moved shifter to neutral
       """
       gearStateMachine(graunchTimeout)
@@ -141,7 +142,7 @@ class graunch:
 ######################################################################
 
 def gearStateMachine(event):
-    global gearState 
+    global gearState
     global graunch_o
     global debug
 

@@ -310,6 +310,7 @@ def main():
   global graunch_o
   global debug
   global graunchWav
+  global ClutchEngaged
 
   config_o = Config()
   debug = config_o.get('miscellaneous', 'debug')

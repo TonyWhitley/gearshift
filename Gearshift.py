@@ -9,9 +9,9 @@
 # The game has to have a key mapped as "Neutral". (Default: Numpad 0)
 #
 
-BUILD_REVISION = 58 # The git branch commit count
-versionStr = 'gearshift V3.1.%d' % BUILD_REVISION
-versionDate = '2019-11-16'
+BUILD_REVISION = 60 # The git branch commit count
+versionStr = 'gearshift V3.2.%d' % BUILD_REVISION
+versionDate = '2020-02-20'
 
 credits = "Reads the clutch and shifter from rF2 using\n" \
  "The Iron Wolf's rF2 Shared Memory Tools.\n" \
@@ -23,7 +23,7 @@ from threading import Timer
 from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
 from tkinter import messagebox
 
-from configIni import Config, configFileName
+from gearshift.configIni import Config, configFileName
 import pyDirectInputKeySend.directInputKeySend as directInputKeySend
 from readJSONfile import Json
 from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, rfKeycodeToDIK
@@ -123,6 +123,7 @@ class graunch:
         # Send the "Neutral" key press
         directInputKeySend.PressKey(neutralButton)
         SetTimer(self.graunch3, 3000)
+        SetTimer(self.graunch1, 20) # Ensure neutralButton is released
         if debug >= 1:
             directInputKeySend.PressReleaseKey('DIK_G')
 
@@ -270,7 +271,7 @@ def gearStateMachine(event):
            msgBox('Bad gearStateMachine() state gearState')
 
     if gearState != graunching and gearState != neutralKeySent:
-        graunch_o.graunchStop()   # belt and braces - sometimes it gets stuck.
+        graunch_o.graunchStop()   # belt and braces - sometimes it gets stuck. REALLY????
 
 
 
@@ -343,26 +344,14 @@ def main():
       print(_keyCode, end=', ')
     quit(99)
 
-  instructions = 'If gear selection fails this program will send %s ' \
-    'to the active window until you reselect a gear.\n\n' \
-    'You can minimise this window now.\n' \
-    'Do not close it until you have finished racing.' % neutralButtonKeycode
-
   graunch_o = graunch()
 
 
-#############################################################
-  # Using shared memory, reading clutch state and gear selected direct from rF2
   controls_o = Controls(debug=debug,mocking=mockInput)
   controls_o.run(memoryMapCallback)
-  # mockInput: testing using the simple GUI to poke inputs into the memory map
-  # otherwise just use the GUI slightly differently
-  root = gui(mocking=mockInput,
-              instructions=instructions,
-              graunch_o=graunch_o,
-              controls_o=controls_o
-              )
-  return root, controls_o
+
+  return controls_o, graunch_o, neutralButtonKeycode
+
 #############################################################
 
 def get_neutral_control(_controller_file_test=None):
@@ -371,7 +360,7 @@ def get_neutral_control(_controller_file_test=None):
     """
     global controller_file
     global neutralButton
-    
+
     if _controller_file_test:
         _controller_file = _controller_file_test
     else:
@@ -391,7 +380,22 @@ def get_neutral_control(_controller_file_test=None):
     messagebox.showinfo('Config error', err)
 
 if __name__ == "__main__":
-  root, controls_o = main()
+  controls_o, graunch_o, neutralButtonKeycode = main()
+  instructions = 'If gear selection fails this program will send %s ' \
+    'to the active window until you reselect a gear.\n\n' \
+    'You can minimise this window now.\n' \
+    'Do not close it until you have finished racing.' % neutralButtonKeycode
+
+  #############################################################
+  # Using shared memory, reading clutch state and gear selected direct from rF2
+  # mockInput: testing using the simple GUI to poke inputs into the memory map
+  # otherwise just use the GUI slightly differently
+  root = gui(mocking=mockInput,
+              instructions=instructions,
+              graunch_o=graunch_o,
+              controls_o=controls_o
+              )
+
   get_neutral_control()
   if root != 'OK':
     root.mainloop()

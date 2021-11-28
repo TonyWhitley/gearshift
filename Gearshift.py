@@ -9,7 +9,7 @@
 # The game has to have a key mapped as "Neutral". (Default: Numpad 0)
 #
 
-BUILD_REVISION = 60 # The git branch commit count
+BUILD_REVISION = 61 # The git branch commit count
 versionStr = 'gearshift V3.2.%d' % BUILD_REVISION
 versionDate = '2020-02-20'
 
@@ -23,7 +23,10 @@ from threading import Timer
 from winsound import PlaySound, SND_FILENAME, SND_LOOP, SND_ASYNC
 from tkinter import messagebox
 
-from gearshift.configIni import Config, configFileName
+try:
+    from configIni import Config, configFileName
+except: # It's a rFactory component
+    from gearshift.configIni import Config, configFileName
 import pyDirectInputKeySend.directInputKeySend as directInputKeySend
 from readJSONfile import Json
 from pyDirectInputKeySend.directInputKeySend import DirectInputKeyCodeTable, rfKeycodeToDIK

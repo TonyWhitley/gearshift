@@ -4,8 +4,11 @@ import tkinter as tk
 from tkinter import font, ttk, messagebox
 from time import sleep
 
-from pyRfactor2SharedMemory.sharedMemoryAPI import SimInfoAPI,\
-    Cbytestring2Python
+try:
+    from pyRfactor2SharedMemory.sharedMemoryAPI import SimInfoAPI,\
+        Cbytestring2Python
+except BaseException:
+    pass
 
 #fontBold = font.Font(family='Helvetica', size=8, weight='bold', slant='italic')
 
